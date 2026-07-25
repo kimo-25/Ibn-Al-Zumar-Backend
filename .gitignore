@@ -55,3 +55,28 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+/.vs
+/.vs/Ibn al-Zumar
+/.vs/Ibn al-Zumar/config
+/.vs/Ibn al-Zumar/config/applicationhost.config
+/.vs/Ibn al-Zumar/CopilotIndices/17.14.995.13737
+/.vs/Ibn al-Zumar/CopilotIndices/17.14.995.13737/CodeChunks.db
+/.vs/Ibn al-Zumar/CopilotIndices/17.14.995.13737/SemanticSymbols.db
+/.vs/Ibn al-Zumar/FileContentIndex
+/.vs/Ibn al-Zumar/FileContentIndex/387d6844-a7a6-421a-90bd-2bcedccd9095.vsidx
+/.vs/Ibn al-Zumar/FileContentIndex/5059c7bc-0d91-4ac4-bd2a-fa2cd50a628c.vsidx
+/.vs/Ibn al-Zumar/FileContentIndex/c627ea33-5ef8-4ba3-a969-73feb72dbdfe.vsidx
+/.vs/Ibn al-Zumar/FileContentIndex/d3ed661c-5386-43dd-8a32-2f1b63f8905f.vsidx
+/.vs/Ibn al-Zumar/FileContentIndex/d86932c7-0864-4569-8bca-e2382aa872e7.vsidx
+/.vs/Ibn al-Zumar/v17
+/.vs/Ibn al-Zumar/v17/.wsuo
+/.vs/Ibn al-Zumar/v17/DocumentLayout.backup.json
+/.vs/Ibn al-Zumar/v17/DocumentLayout.json
+/.vs/ProjectSettings.json
+/.vs/slnx.sqlite
+/.vs/VSWorkspaceState.json
+/Ibn al-Zumar.API/.vs/Ibn al-Zumar.API/CopilotIndices/17.14.995.13737
+/Ibn al-Zumar.API/.vs/Ibn al-Zumar.API/CopilotIndices/17.14.995.13737/CodeChunks.db-shm
+/Ibn al-Zumar.API/.vs/Ibn al-Zumar.API/CopilotIndices/17.14.995.13737/CodeChunks.db-wal
+/Ibn al-Zumar.API/.vs/Ibn al-Zumar.API/CopilotIndices/17.14.995.13737/SemanticSymbols.db-shm
+/Ibn al-Zumar.API/.vs/Ibn al-Zumar.API/CopilotIndices/17.14.995.13737/SemanticSymbols.db-wal
