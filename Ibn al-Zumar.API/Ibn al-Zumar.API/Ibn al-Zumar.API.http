@@ -1,0 +1,23 @@
+﻿@IbnAlZumar_API_HostAddress = https://localhost:7223
+
+### 1. تسجيل الدخول للحصول على الـ Token
+POST {{IbnAlZumar_API_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin@123456"
+}
+
+###
+
+# انسخ التوكن اللي هيطلع لك وحطه في السطر اللي تحت ده:
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwianRpIjoiZGU1YWE5YWQtYmM1My00NDk4LWI1YmEtNmE5MWQ1N2RiZDdjIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6ImFkbWluIiwiZnVsbE5hbWUiOiJTdXBlciBBZG1pbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwicGVybWlzc2lvbiI6WyJQcm9kdWN0cy5WaWV3IiwiUHJvZHVjdHMuQ3JlYXRlIiwiUHJvZHVjdHMuRWRpdCIsIlByb2R1Y3RzLkRlbGV0ZSIsIkNhdGVnb3JpZXMuTWFuYWdlIiwiSW52ZW50b3J5LlZpZXciLCJJbnZlbnRvcnkuQWRqdXN0IiwiSW52ZW50b3J5LlRyYW5zZmVyIiwiUHVyY2hhc2luZy5WaWV3IiwiUHVyY2hhc2luZy5DcmVhdGUiLCJQdXJjaGFzaW5nLkFwcHJvdmUiLCJPcmRlcnMuVmlldyIsIk9yZGVycy5DcmVhdGUiLCJPcmRlcnMuRWRpdCIsIk9yZGVycy5DYW5jZWwiLCJDdXN0b21lcnMuVmlldyIsIkN1c3RvbWVycy5NYW5hZ2UiLCJDdXN0b21lcnMuTWFuYWdlRGVidCIsIlVzZXJzLk1hbmFnZSIsIlJvbGVzLk1hbmFnZSIsIlBlcm1pc3Npb25zLk1hbmFnZSIsIlJlcG9ydHMuVmlldyJdLCJleHAiOjE3ODQ2NDI5NzIsImlzcyI6IklibkFsWnVtYXIuQXBpIiwiYXVkIjoiSWJuQWxadW1hci5DbGllbnQifQ.3jJWPIabUyeUqIL-vrrNxW1n3Vt0W3L1xUXvixE438I
+
+### 2. تجربة تقرير المبيعات والأرباح
+GET {{IbnAlZumar_API_HostAddress}}/api/Reports/sales
+Authorization: Bearer {{token}}
+
+### 3. تجربة تقرير حالة المخزون
+GET {{IbnAlZumar_API_HostAddress}}/api/Reports/inventory-status
+Authorization: Bearer {{token}}

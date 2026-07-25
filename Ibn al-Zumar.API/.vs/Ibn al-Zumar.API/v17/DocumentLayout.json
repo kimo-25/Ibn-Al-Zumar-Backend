@@ -1,0 +1,217 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\controllers\\orderscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\controllers\\orderscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\dtos\\sales\\createorderdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\dtos\\sales\\createorderdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\controllers\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\controllers\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\ibn al-zumar.api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\ibn al-zumar.api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\controllers\\reportscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\controllers\\reportscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\services\\catalog\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\services\\catalog\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\services\\catalog\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\services\\catalog\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\services\\identity\\usermanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\services\\identity\\usermanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": ".gitignore",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\.gitignore",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\.gitignore",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\.gitignore",
+              "RelativeToolTip": "Ibn al-Zumar.API\\.gitignore",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-07-25T19:08:31.458Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CreateOrderDto.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\DTOs\\Sales\\CreateOrderDto.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\DTOs\\Sales\\CreateOrderDto.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\DTOs\\Sales\\CreateOrderDto.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\DTOs\\Sales\\CreateOrderDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T10:23:06.346Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IOrderService.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\IOrderService.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\IOrderService.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\IOrderService.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Controllers\\IOrderService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T10:19:21.674Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "OrdersController.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\OrdersController.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\OrdersController.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\OrdersController.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Controllers\\OrdersController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T10:16:55.64Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "CategoriesController.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\CategoriesController.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\CategoriesController.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\CategoriesController.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Controllers\\CategoriesController.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAiwCwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T10:13:51.607Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Ibn al-Zumar.API.http",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.http",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Ibn al-Zumar.API.http",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.http",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Ibn al-Zumar.API.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAABYBAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-07-21T12:17:45.754Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Ibn al-Zumar.API.csproj",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-07-21T12:17:22.885Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "IProductService.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Catalog\\IProductService.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Services\\Catalog\\IProductService.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Catalog\\IProductService.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Services\\Catalog\\IProductService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-21T12:03:57.734Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ProductService.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Catalog\\ProductService.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Services\\Catalog\\ProductService.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Catalog\\ProductService.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Services\\Catalog\\ProductService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-21T12:03:27.434Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ReportsController.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\ReportsController.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\ReportsController.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\ReportsController.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Controllers\\ReportsController.cs",
+              "ViewState": "AgIAACkAAAAAAAAAAAAiwDcAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-21T11:57:02.895Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "UserManagementService.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Identity\\UserManagementService.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Services\\Identity\\UserManagementService.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Identity\\UserManagementService.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Services\\Identity\\UserManagementService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAK4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-21T11:53:15.344Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Program.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Program.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Program.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Program.cs",
+              "ViewState": "AgIAAKQAAAAAAAAAAAAAALkAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-21T11:12:28.87Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
