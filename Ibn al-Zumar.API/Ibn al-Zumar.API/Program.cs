@@ -1,4 +1,4 @@
-﻿// File: Program.cs
+// File: Program.cs
 using System.Text;
 using IbnAlZumar.Api.Authorization;
 using IbnAlZumar.Api.Common.Settings;
@@ -25,6 +25,12 @@ using Microsoft.OpenApi.Models;
 using Services.Sales;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ---------------------------------------------------------------------------
+// Configure URLs for Railway Port binding
+// ---------------------------------------------------------------------------
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://*:{port}");
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -155,11 +161,9 @@ var app = builder.Build();
 // ---------------------------------------------------------------------------
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Enable Swagger in all environments so it works on Railway Production
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
