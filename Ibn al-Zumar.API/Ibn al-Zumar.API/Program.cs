@@ -1,4 +1,5 @@
 ﻿// File: Program.cs
+using System.Text;
 using IbnAlZumar.Api.Authorization;
 using IbnAlZumar.Api.Common.Settings;
 using IbnAlZumar.Api.Middleware;
@@ -10,6 +11,7 @@ using IbnAlZumar.API.Services.Customers;
 using IbnAlZumar.API.Services.Identity;
 using IbnAlZumar.API.Services.Inventory;
 using IbnAlZumar.API.Services.Purchasing;
+using IbnAlZumar.API.Services.Reminders;
 using IbnAlZumar.Domain.Entities.Identity;
 using IbnAlZumar.Persistence;
 using IbnAlZumar.Persistence.Seed;
@@ -17,9 +19,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
+using Services.Sales;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,11 +41,10 @@ var allowedCorsOrigins = builder.Configuration.GetSection("AllowedCorsOrigins").
 // DbContext
 // ---------------------------------------------------------------------------
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ---------------------------------------------------------------------------
-// Password hashing — Identity's PasswordHasher<TUser> used standalone (PBKDF2 under the hood),
-// no full ASP.NET Core Identity system / Identity tables involved.
+// Password hashing — Standalone PasswordHasher<User>
 // ---------------------------------------------------------------------------
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
@@ -50,18 +52,16 @@ builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 // Application services
 // ---------------------------------------------------------------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
-
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-
 builder.Services.AddScoped<IProductService, ProductService>();
-
 builder.Services.AddScoped<ICustomerService, CustomerService>();
-
 builder.Services.AddScoped<IInventoryService, InventoryService>();
-
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
-
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+// Reminders Service Registration
+builder.Services.AddScoped<IReminderService, ReminderService>();
 
 // ---------------------------------------------------------------------------
 // Authentication (JWT Bearer)
@@ -92,14 +92,14 @@ builder.Services.AddAuthentication(options =>
 });
 
 // ---------------------------------------------------------------------------
-// Authorization — dynamic permission-based policies (see Authorization/ folder)
+// Authorization
 // ---------------------------------------------------------------------------
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddAuthorization();
 
 // ---------------------------------------------------------------------------
-// CORS — local POS frontend (React/Vite dev server, etc.)
+// CORS
 // ---------------------------------------------------------------------------
 const string CorsPolicyName = "PosFrontend";
 builder.Services.AddCors(options =>
@@ -119,7 +119,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 
 // ---------------------------------------------------------------------------
-// Swagger with Bearer token support
+// Swagger
 // ---------------------------------------------------------------------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -151,10 +151,8 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 // ---------------------------------------------------------------------------
-// Middleware pipeline — order matters
+// Middleware pipeline
 // ---------------------------------------------------------------------------
-
-// 1. Exception handling first, so it can catch anything thrown by everything below it.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -165,10 +163,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 2. CORS before auth, so preflight requests aren't blocked by the auth pipeline.
+// 1. تفعيل CORS قبل StaticFiles لضمان سماح الـ Cors للصور
 app.UseCors(CorsPolicyName);
 
-// 3. AuthN before AuthZ, always.
+// 2. تفعيل الملفات الثابتة والصور
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -180,7 +180,3 @@ app.MapControllers();
 await app.SeedDatabaseAsync();
 
 app.Run();
-//{
-//"username": "admin",
-//  "password": "Admin@123456"
-//}

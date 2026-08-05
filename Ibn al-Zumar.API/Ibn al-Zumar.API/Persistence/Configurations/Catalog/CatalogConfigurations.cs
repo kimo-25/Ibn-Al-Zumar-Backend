@@ -17,8 +17,6 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.HasIndex(c => c.Slug).IsUnique();
 
-        // Restrict: deleting a category with children/products must be handled explicitly
-        // in application logic, never silently cascaded.
         builder.HasOne(c => c.ParentCategory)
             .WithMany(c => c.SubCategories)
             .HasForeignKey(c => c.ParentCategoryId)
@@ -64,18 +62,17 @@ public class ProductAttributeValueConfiguration : IEntityTypeConfiguration<Produ
 
         builder.Property(v => v.Value).IsRequired().HasMaxLength(200);
 
-        // A product cannot have the same attribute defined twice.
         builder.HasIndex(v => new { v.ProductId, v.ProductAttributeDefinitionId }).IsUnique();
 
         builder.HasOne(v => v.Product)
             .WithMany(p => p.AttributeValues)
             .HasForeignKey(v => v.ProductId)
-            .OnDelete(DeleteBehavior.Cascade); // deleting a product removes its spec values
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(v => v.ProductAttributeDefinition)
             .WithMany(a => a.ProductAttributeValues)
             .HasForeignKey(v => v.ProductAttributeDefinitionId)
-            .OnDelete(DeleteBehavior.Restrict); // don't let removing a definition wipe product data implicitly
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 
@@ -106,13 +103,17 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Barcode).HasMaxLength(50);
         builder.Property(p => p.Name).IsRequired().HasMaxLength(300);
         builder.Property(p => p.NameAr).HasMaxLength(300);
-        builder.Property(p => p.Description).HasColumnType("nvarchar(max)");
 
         builder.Property(p => p.SellingPrice).HasPrecision(18, 2);
         builder.Property(p => p.CurrentCostPrice).HasPrecision(18, 2);
 
+        // Map scalar ImageUrl column (optional)
+        builder.Property(p => p.ImageUrl).HasMaxLength(500);
+
         builder.HasIndex(p => p.SKU).IsUnique();
-        builder.HasIndex(p => p.Barcode); // not unique: not every product has one yet
+        builder.HasIndex(p => p.Barcode);
+        builder.HasIndex(p => p.CategoryId);
+        builder.HasIndex(p => p.BrandId);
 
         builder.HasOne(p => p.Category)
             .WithMany(c => c.Products)
@@ -123,5 +124,30 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .WithMany(b => b.Products)
             .HasForeignKey(p => p.BrandId)
             .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+// NEW
+public class ProductVariantConfiguration : IEntityTypeConfiguration<ProductVariant>
+{
+    public void Configure(EntityTypeBuilder<ProductVariant> builder)
+    {
+        builder.ToTable("ProductVariants");
+        builder.HasKey(v => v.Id);
+
+        builder.Property(v => v.SKU).IsRequired().HasMaxLength(100);
+        builder.Property(v => v.Price).HasPrecision(18, 2);
+        builder.Property(v => v.StockQuantity).IsRequired();
+        builder.Property(v => v.Color).HasMaxLength(100);
+        builder.Property(v => v.Finish).HasMaxLength(100);
+        builder.Property(v => v.Material).HasMaxLength(100);
+
+        builder.HasIndex(v => v.SKU).IsUnique();
+        builder.HasIndex(v => new { v.ProductId, v.IsActive });
+
+        builder.HasOne(v => v.Product)
+            .WithMany(p => p.Variants)
+            .HasForeignKey(v => v.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

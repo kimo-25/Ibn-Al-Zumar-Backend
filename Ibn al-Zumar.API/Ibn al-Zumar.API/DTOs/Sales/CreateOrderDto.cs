@@ -4,6 +4,7 @@
     {
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerPhone { get; set; } = string.Empty;
+        public string? CustomerEmail { get; set; } // 👈 إضافة إيميل العميل لربط الطلب
         public string? ShippingAddress { get; set; }
         public string? Notes { get; set; }
         public List<CreateOrderItemDto> Items { get; set; } = new();

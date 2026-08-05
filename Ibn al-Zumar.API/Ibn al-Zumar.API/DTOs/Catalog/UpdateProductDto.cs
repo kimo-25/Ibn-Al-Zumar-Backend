@@ -2,46 +2,40 @@
 
 namespace IbnAlZumar.API.DTOs.Catalog;
 
-    /// <summary>
-    /// Fields a client is allowed to change on an existing product.
-    /// Id is taken from the route, not the body.
-    /// </summary>
-    public class UpdateProductDto
-    {
-        [Required(ErrorMessage = "SKU مطلوب")]
-        [MaxLength(50)]
-        public string SKU { get; set; } = string.Empty;
+public class UpdateProductDto
+{
+    [Required, MaxLength(50)]
+    public string SKU { get; set; } = string.Empty;
 
-        [MaxLength(50)]
-        public string? Barcode { get; set; }
+    [MaxLength(50)]
+    public string? Barcode { get; set; }
 
-        [Required(ErrorMessage = "اسم المنتج مطلوب")]
-        [MaxLength(200)]
-        public string Name { get; set; } = string.Empty;
+    [Required, MaxLength(300)]
+    public string Name { get; set; } = string.Empty;
 
-        [MaxLength(200)]
-        public string? NameAr { get; set; }
+    [MaxLength(300)]
+    public string? NameAr { get; set; }
 
-        public string? Description { get; set; }
+    public string? Description { get; set; }
 
-        [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "سعر البيع يجب أن يكون أكبر من أو يساوي صفر")]
-        public decimal SellingPrice { get; set; }
+    [Range(0, double.MaxValue)]
+    public decimal SellingPrice { get; set; }
 
-        [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "سعر التكلفة يجب أن يكون أكبر من أو يساوي صفر")]
-        public decimal CurrentCostPrice { get; set; }
+    [Range(0, double.MaxValue)]
+    public decimal? CurrentCostPrice { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "عدد القطع في الكرتونة يجب أن يكون 1 على الأقل")]
-        public int QuantityPerCarton { get; set; } = 1;
+    [Range(1, int.MaxValue)]
+    public int QuantityPerCarton { get; set; } = 1;
 
-        public bool IsActive { get; set; } = true;
+    public bool IsActive { get; set; } = true;
+    public bool TrackInventory { get; set; } = true;
 
-        public bool TrackInventory { get; set; } = true;
+    [Required]
+    public int CategoryId { get; set; }
 
-        [Required(ErrorMessage = "التصنيف مطلوب")]
-        public int CategoryId { get; set; }
+    public int? BrandId { get; set; }
 
-        [Required(ErrorMessage = "البراند مطلوب")]
-        public int BrandId { get; set; }
-    }
+    public string? ImageUrl { get; set; } // أضفنا هذا الحقل لتحديث مسار الصورة
+
+    public List<UpdateProductVariantDto> Variants { get; set; } = new();
+}

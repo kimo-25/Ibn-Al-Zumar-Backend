@@ -77,6 +77,7 @@ public static class DataSeeder
         await SeedRolesAsync(context, logger);
         await SeedRolePermissionsAsync(context, logger);
         await SeedSuperAdminAsync(context, passwordHasher, logger);
+        await SeedModeratorUserAsync(context, passwordHasher, logger);
     }
 
     private static async Task SeedPermissionsAsync(ApplicationDbContext context, ILogger logger)
@@ -98,7 +99,8 @@ public static class DataSeeder
 
     private static async Task SeedRolesAsync(ApplicationDbContext context, ILogger logger)
     {
-        var requiredRoles = new[] { "Admin", "Cashier" };
+        // Add Owner and Moderator roles so controllers that use these names match seeded roles.
+        var requiredRoles = new[] { "Owner", "Admin", "Moderator", "Cashier" };
         var existingRoles = (await context.Roles.Select(r => r.Name).ToListAsync())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -107,7 +109,14 @@ public static class DataSeeder
             .Select(r => new Role
             {
                 Name = r,
-                Description = r == "Admin" ? "Full system access" : "Point-of-sale day-to-day operations"
+                Description = r switch
+                {
+                    "Owner" => "Full system access (Owner / Super Admin)",
+                    "Admin" => "Administrator with elevated privileges",
+                    "Moderator" => "Limited content/data entry and management",
+                    "Cashier" => "Point-of-sale day-to-day operations",
+                    _ => r
+                }
             })
             .ToList();
 
@@ -120,11 +129,23 @@ public static class DataSeeder
 
     private static async Task SeedRolePermissionsAsync(ApplicationDbContext context, ILogger logger)
     {
+        var ownerRole = await context.Roles.FirstAsync(r => r.Name == "Owner");
         var adminRole = await context.Roles.FirstAsync(r => r.Name == "Admin");
+        var moderatorRole = await context.Roles.FirstAsync(r => r.Name == "Moderator");
         var cashierRole = await context.Roles.FirstAsync(r => r.Name == "Cashier");
         var allPermissions = await context.Permissions.ToListAsync();
 
-        // Admin: every permission in the system, per the requirement.
+        // Owner and Admin: every permission in the system.
+        var existingOwnerIds = (await context.RolePermissions
+            .Where(rp => rp.RoleId == ownerRole.Id)
+            .Select(rp => rp.PermissionId)
+            .ToListAsync()).ToHashSet();
+
+        var ownerMissing = allPermissions
+            .Where(p => !existingOwnerIds.Contains(p.Id))
+            .Select(p => new RolePermission { RoleId = ownerRole.Id, PermissionId = p.Id })
+            .ToList();
+
         var existingAdminIds = (await context.RolePermissions
             .Where(rp => rp.RoleId == adminRole.Id)
             .Select(rp => rp.PermissionId)
@@ -135,8 +156,32 @@ public static class DataSeeder
             .Select(p => new RolePermission { RoleId = adminRole.Id, PermissionId = p.Id })
             .ToList();
 
-        // Cashier: a sensible default subset for day-to-day POS work. This is just seed data —
-        // an Admin can add/remove permissions per-role or per-user later without any code change.
+        // Moderator: limited to Products, Categories, Customers and Orders (no Reports/Financials/Purchasing approval).
+        var moderatorCodes = new[]
+        {
+            PermissionCodes.ProductsView,
+            PermissionCodes.ProductsCreate,
+            PermissionCodes.ProductsEdit,
+            PermissionCodes.ProductsDelete,
+            PermissionCodes.CategoriesManage,
+            PermissionCodes.CustomersView,
+            PermissionCodes.CustomersManage,
+            PermissionCodes.OrdersView,
+            PermissionCodes.OrdersCreate,
+            PermissionCodes.OrdersEdit
+        };
+
+        var existingModeratorIds = (await context.RolePermissions
+            .Where(rp => rp.RoleId == moderatorRole.Id)
+            .Select(rp => rp.PermissionId)
+            .ToListAsync()).ToHashSet();
+
+        var moderatorMissing = allPermissions
+            .Where(p => moderatorCodes.Contains(p.Code) && !existingModeratorIds.Contains(p.Id))
+            .Select(p => new RolePermission { RoleId = moderatorRole.Id, PermissionId = p.Id })
+            .ToList();
+
+        // Cashier: subset used previously (POS scenario)
         var cashierCodes = new[]
         {
             PermissionCodes.ProductsView,
@@ -157,14 +202,16 @@ public static class DataSeeder
             .Select(p => new RolePermission { RoleId = cashierRole.Id, PermissionId = p.Id })
             .ToList();
 
-        if (adminMissing.Count == 0 && cashierMissing.Count == 0) return;
+        if (ownerMissing.Count == 0 && adminMissing.Count == 0 && moderatorMissing.Count == 0 && cashierMissing.Count == 0) return;
 
+        context.RolePermissions.AddRange(ownerMissing);
         context.RolePermissions.AddRange(adminMissing);
+        context.RolePermissions.AddRange(moderatorMissing);
         context.RolePermissions.AddRange(cashierMissing);
         await context.SaveChangesAsync();
         logger.LogInformation(
-            "Mapped {AdminCount} permissions to Admin, {CashierCount} to Cashier",
-            adminMissing.Count, cashierMissing.Count);
+            "Mapped {OwnerCount} permissions to Owner, {AdminCount} to Admin, {ModeratorCount} to Moderator, {CashierCount} to Cashier",
+            ownerMissing.Count, adminMissing.Count, moderatorMissing.Count, cashierMissing.Count);
     }
 
     private static async Task SeedSuperAdminAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
@@ -189,12 +236,43 @@ public static class DataSeeder
         context.Users.Add(adminUser);
         await context.SaveChangesAsync(); // need adminUser.Id for the UserRole row below
 
-        var adminRole = await context.Roles.FirstAsync(r => r.Name == "Admin");
-        context.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = adminRole.Id });
+        // Give the seeded account the Owner role (full permissions). This ensures Super Admin/Owner
+        // can access Owner Hub, Operations, Financials, and User Management.
+        var ownerRole = await context.Roles.FirstAsync(r => r.Name == "Owner");
+        context.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = ownerRole.Id });
         await context.SaveChangesAsync();
 
         logger.LogWarning(
             "Seeded default Super Admin (username: {Username}, password: {Password}). CHANGE THE PASSWORD IMMEDIATELY.",
             defaultUsername, defaultPassword);
+    }
+
+    private static async Task SeedModeratorUserAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
+    {
+        const string username = "Kamal";
+        const string password = "Kamal2004!!"; // For testing only — remove or change in production.
+
+        if (await context.Users.AnyAsync(u => u.Username == username))
+        {
+            return;
+        }
+
+        var modUser = new User
+        {
+            FullName = "Kamal Moderator",
+            Username = username,
+            Email = "kamal@local",
+            IsActive = true,
+        };
+        modUser.PasswordHash = passwordHasher.HashPassword(modUser, password);
+
+        context.Users.Add(modUser);
+        await context.SaveChangesAsync();
+
+        var moderatorRole = await context.Roles.FirstAsync(r => r.Name == "Moderator");
+        context.UserRoles.Add(new UserRole { UserId = modUser.Id, RoleId = moderatorRole.Id });
+        await context.SaveChangesAsync();
+
+        logger.LogInformation("Seeded default Moderator (username: {Username}, password: {Password}).", username, password);
     }
 }

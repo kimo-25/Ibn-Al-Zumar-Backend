@@ -1,46 +1,54 @@
 ﻿using IbnAlZumar.Domain.Common;
-using IbnAlZumar.Domain.Entities.Catalog;
+using IbnAlZumar.Domain.Entities.Inventory;
+using IbnAlZumar.Domain.Entities.Purchasing;
+using IbnAlZumar.Domain.Entities.Sales;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace IbnAlZumar.API.Domain.Entities
+namespace IbnAlZumar.Domain.Entities.Catalog;
+
+public class Product : BaseEntity
 {
-    public class Product : BaseEntity
-    {
-        [Required, MaxLength(50)]
-        public string SKU { get; set; } = string.Empty;
+    [Required, MaxLength(50)]
+    public string SKU { get; set; } = string.Empty;
 
-        [MaxLength(50)]
-        public string? Barcode { get; set; }
+    [MaxLength(50)]
+    public string? Barcode { get; set; }
 
-        [Required, MaxLength(200)]
-        public string Name { get; set; } = string.Empty;
+    [Required, MaxLength(200)]
+    public string Name { get; set; } = string.Empty;
 
-        [MaxLength(200)]
-        public string? NameAr { get; set; }
+    [MaxLength(200)]
+    public string? NameAr { get; set; }
 
-        public string? Description { get; set; }
+    public string? Description { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal SellingPrice { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal SellingPrice { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal CurrentCostPrice { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal CurrentCostPrice { get; set; }
 
-        public int QuantityPerCarton { get; set; } = 1;
+    public int QuantityPerCarton { get; set; } = 1;
 
-        public bool IsActive { get; set; } = true;
+    public bool IsActive { get; set; } = true;
 
-        public bool TrackInventory { get; set; } = true;
+    public bool TrackInventory { get; set; } = true;
 
-        public int CategoryId { get; set; }
-        public Category Category { get; set; } = null!;
+    public int CategoryId { get; set; }
+    public Category Category { get; set; } = null!;
 
-        public int BrandId { get; set; }
-        public Brand Brand { get; set; } = null!;
+    public int BrandId { get; set; }
+    public Brand Brand { get; set; } = null!;
 
-        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+    // New scalar image URL property — used as primary stored URL when present
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
 
-        public ICollection<ProductAttributeValue> AttributeValues { get; set; } = new List<ProductAttributeValue>();
-    }
+    public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+    public ICollection<ProductAttributeValue> AttributeValues { get; set; } = new List<ProductAttributeValue>();
+    public ICollection<ProductStock> Stocks { get; set; } = new List<ProductStock>();
+    public ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItem>();
+    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
 }

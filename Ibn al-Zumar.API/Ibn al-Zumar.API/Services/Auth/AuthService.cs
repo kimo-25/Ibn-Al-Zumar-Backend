@@ -1,9 +1,10 @@
-﻿// File: Services/Auth/AuthService.cs
+﻿using Google.Apis.Auth;
 using IbnAlZumar.Api.Common.Exceptions;
 using IbnAlZumar.Api.Common.Settings;
 using IbnAlZumar.Api.DTOs.Auth;
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.Domain.Entities.Identity;
+using IbnAlZumar.Domain.Entities.Sales;
 using IbnAlZumar.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,6 @@ public class AuthService : IAuthService
             .Include(u => u.UserPermissions).ThenInclude(up => up.Permission)
             .FirstOrDefaultAsync(u => u.Username == request.Username);
 
-        // Same error for "no such user" and "wrong password" — don't reveal which usernames exist.
         if (user is null || !user.IsActive)
         {
             throw new UnauthorizedAppException("Invalid username or password.");
@@ -67,12 +67,145 @@ public class AuthService : IAuthService
         };
     }
 
-    /// <summary>
-    /// Effective permission = union of all the user's role defaults (via UserRole -> RolePermission),
-    /// then per-user UserPermission overrides applied on top: IsGranted = true force-adds a
-    /// permission even if no role grants it; IsGranted = false force-removes one even if a role does.
-    /// This is the same resolution rule described on the UserPermission entity itself.
-    /// </summary>
+    public async Task<LoginResponseDto> GoogleLoginAsync(GoogleLoginRequestDto request)
+    {
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
+        }
+        catch (Exception)
+        {
+            throw new UnauthorizedAppException("Invalid Google token.");
+        }
+
+        var user = await _context.Users
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role).ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
+            .Include(u => u.UserPermissions).ThenInclude(up => up.Permission)
+            .FirstOrDefaultAsync(u => u.Username == payload.Email || u.Email == payload.Email);
+
+        if (user is null)
+        {
+            user = new User
+            {
+                Username = payload.Email,
+                Email = payload.Email,
+                FullName = payload.Name ?? "Google User",
+                PasswordHash = string.Empty,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+
+            var customer = new Customer
+            {
+                FullName = payload.Name ?? "Google User",
+                Email = payload.Email,
+                IsRegistered = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+        }
+
+        if (!user.IsActive)
+        {
+            throw new UnauthorizedAppException("This account has been deactivated.");
+        }
+
+        var roleNames = user.UserRoles?.Select(ur => ur.Role.Name).ToList() ?? new List<string>();
+        var permissionCodes = ResolveEffectivePermissions(user);
+
+        var token = GenerateJwtToken(user, roleNames, permissionCodes, out var expiresAtUtc);
+
+        user.LastLoginAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return new LoginResponseDto
+        {
+            Token = token,
+            ExpiresAtUtc = expiresAtUtc,
+            UserId = user.Id,
+            FullName = user.FullName,
+            Username = user.Username,
+            Roles = roleNames,
+            Permissions = permissionCodes
+        };
+    }
+
+    public async Task<LoginResponseDto> RegisterAsync(RegisterRequestDto request)
+    {
+        var existingUser = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == request.Email || u.Username == request.Email);
+
+        if (existingUser != null)
+        {
+            throw new UnauthorizedAppException("User with this email already exists.");
+        }
+
+        var user = new User
+        {
+            Username = request.Email,
+            Email = request.Email,
+            FullName = request.FullName,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+
+        _context.Users.Add(user);
+
+        var customer = new Customer
+        {
+            FullName = request.FullName,
+            Email = request.Email,
+            IsRegistered = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Customers.Add(customer);
+        await _context.SaveChangesAsync();
+
+        var roleNames = new List<string>();
+        var permissionCodes = new List<string>();
+
+        var token = GenerateJwtToken(user, roleNames, permissionCodes, out var expiresAtUtc);
+
+        return new LoginResponseDto
+        {
+            Token = token,
+            ExpiresAtUtc = expiresAtUtc,
+            UserId = user.Id,
+            FullName = user.FullName,
+            Username = user.Username,
+            Roles = roleNames,
+            Permissions = permissionCodes
+        };
+    }
+
+    public async Task UpdateProfileAsync(int userId, UpdateProfileRequestDto request)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            throw new UnauthorizedAppException("User not found.");
+        }
+
+        user.FullName = request.FullName;
+
+        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == user.Email);
+        if (customer != null)
+        {
+            customer.FullName = request.FullName;
+            customer.Phone = request.Phone;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
     private static List<string> ResolveEffectivePermissions(User user)
     {
         var fromRoles = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).Select(rp => rp.Permission.Code);
@@ -97,13 +230,11 @@ public class AuthService : IAuthService
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.Username),
+            new(ClaimTypes.Email, user.Email),
             new("fullName", user.FullName),
         };
 
-        // ClaimTypes.Role claims light up [Authorize(Roles = "Admin")] for free.
         claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
-
-        // Custom "permission" claims are what the PermissionAuthorizationHandler checks against.
         claims.AddRange(permissions.Select(p => new Claim("permission", p)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));

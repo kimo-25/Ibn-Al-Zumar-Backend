@@ -17,7 +17,8 @@ public enum OrderStatus
     Delivered = 6,
     Completed = 7,
     Cancelled = 8,
-    Returned = 9
+    Returned = 9,
+    Shipped = 10 // 👈 تم إضافتها بحجم معرّف مستقل لمنع أي تضارب
 }
 
 /// <summary>
@@ -88,4 +89,11 @@ public enum AttributeDataType
     Text = 1,
     Number = 2,
     Boolean = 3
+}
+
+/// <summary>Determines whether the reminder is a Quranic Ayah or an Islamic Dhikr.</summary>
+public enum ReminderType
+{
+    Quran = 1,
+    Dhikr = 2
 }
