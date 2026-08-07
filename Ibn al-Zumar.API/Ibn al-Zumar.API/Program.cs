@@ -1,4 +1,3 @@
-// File: Program.cs
 using System.Text;
 using IbnAlZumar.Api.Authorization;
 using IbnAlZumar.Api.Common.Settings;
@@ -20,6 +19,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Services.Sales;
@@ -27,10 +27,13 @@ using Services.Sales;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------------------------------------------------------------
-// Configure URLs for Railway Port binding
+// Configure URLs for Railway / Render / Container hosting
 // ---------------------------------------------------------------------------
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://*:{port}");
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+{
+    builder.WebHost.UseUrls($"http://*:{port}");
+}
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -40,14 +43,29 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
-var allowedCorsOrigins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>()
-    ?? Array.Empty<string>();
+// ---------------------------------------------------------------------------
+// DbContext (PostgreSQL Provider)
+// ---------------------------------------------------------------------------
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// ---------------------------------------------------------------------------
-// DbContext
-// ---------------------------------------------------------------------------
+// تحويل DATABASE_URL التلقائي الخاص بمنصات Cloud Hosting (زي Render) إلى Connection String يقرأه PostgreSQL
+var envDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
+{
+    if (envDatabaseUrl.StartsWith("postgres://") || envDatabaseUrl.StartsWith("postgresql://"))
+    {
+        var databaseUri = new Uri(envDatabaseUrl);
+        var userInfo = databaseUri.UserInfo.Split(':');
+        connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    }
+    else
+    {
+        connectionString = envDatabaseUrl;
+    }
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // ---------------------------------------------------------------------------
 // Password hashing — Standalone PasswordHasher<User>
@@ -105,18 +123,26 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler
 builder.Services.AddAuthorization();
 
 // ---------------------------------------------------------------------------
-// CORS
+// CORS Policy (Permissive Policy for Deployed Frontend Compatibility)
 // ---------------------------------------------------------------------------
 const string CorsPolicyName = "PosFrontend";
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicyName, policy =>
     {
-        policy.WithOrigins(allowedCorsOrigins)
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
+});
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 // ---------------------------------------------------------------------------
@@ -159,19 +185,28 @@ var app = builder.Build();
 // ---------------------------------------------------------------------------
 // Middleware pipeline
 // ---------------------------------------------------------------------------
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// Enable Swagger in all environments so it works on Railway Production
+app.UseForwardedHeaders();
+
+// Enable Swagger in all environments so it works on Railway / Render
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
-// 1. تفعيل CORS قبل StaticFiles لضمان سماح الـ Cors للصور
-app.UseCors(CorsPolicyName);
-
-// 2. تفعيل الملفات الثابتة والصور
 app.UseStaticFiles();
+
+// ---------------------------------------------------------------------------
+// Routing & CORS & Auth Pipeline Order
+// ---------------------------------------------------------------------------
+app.UseRouting();
+
+app.UseCors(CorsPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
