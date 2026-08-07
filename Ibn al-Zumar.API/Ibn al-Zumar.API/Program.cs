@@ -48,7 +48,7 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSett
 // ---------------------------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// تحويل DATABASE_URL التلقائي الخاص بمنصات Cloud Hosting (زي Render) إلى Connection String يقرأه PostgreSQL
+// تحويل DATABASE_URL التلقائي الخاص بمنصات Cloud Hosting (زي Railway) إلى Connection String يقرأه PostgreSQL
 var envDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
 {
@@ -56,7 +56,7 @@ if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
     {
         var databaseUri = new Uri(envDatabaseUrl);
         var userInfo = databaseUri.UserInfo.Split(':');
-        connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+        connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Prefer;Trust Server Certificate=true";
     }
     else
     {
