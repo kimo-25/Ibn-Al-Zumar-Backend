@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\seed\\dataseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\persistence\\seed\\dataseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\seed\\dataseederextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -53,10 +53,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\services\\reminders\\reminderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\services\\reminders\\reminderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\seed\\seeddata.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\persistence\\seed\\seeddata.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
     }
   ],
   "DocumentGroupContainers": [
@@ -66,7 +62,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -74,8 +70,8 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Ibn al-Zumar.API",
+              "DocumentIndex": 1,
+              "Title": "Ibn al-Zumar.API.csproj",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
               "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
@@ -95,18 +91,17 @@
               "RelativeToolTip": "Ibn al-Zumar.API\\Persistence\\Seed\\DataSeederExtensions.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-07T13:33:11.21Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-07T13:33:11.21Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "DataSeeder.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\DataSeeder.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Persistence\\Seed\\DataSeeder.cs",
               "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\DataSeeder.cs",
               "RelativeToolTip": "Ibn al-Zumar.API\\Persistence\\Seed\\DataSeeder.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAJIBAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAGcBAAAAAAAAAAAiwIgBAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-08-07T13:33:02.866Z",
               "EditorCaption": ""
@@ -114,14 +109,13 @@
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "SeedData.sql ",
+              "Title": "SeedData.sql",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
               "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
               "RelativeToolTip": "Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-08-07T12:59:55.921Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-07T12:59:55.921Z"
             },
             {
               "$type": "Document",
@@ -217,8 +211,7 @@
               "RelativeToolTip": "Ibn al-Zumar.API\\Program.cs",
               "ViewState": "AgIAALAAAAAAAAAAAAAiwMMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-05T17:24:24.259Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-05T17:24:24.259Z"
             },
             {
               "$type": "Document",

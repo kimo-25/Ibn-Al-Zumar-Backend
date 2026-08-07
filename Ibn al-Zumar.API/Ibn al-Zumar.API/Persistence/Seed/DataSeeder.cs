@@ -343,6 +343,7 @@ public static class DataSeeder
                     IsActive = parseBool(GetValue(parts, 9)),
                     TrackInventory = parseBool(GetValue(parts, 10)),
                     CategoryId = parseInt(GetValue(parts, 11), 1),
+                    BrandId = 1, // ربط المنتج بـ Brand رقم 1 لتجنب مشكلة الـ Foreign Key Constraint
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     IsDeleted = false
