@@ -27,7 +27,21 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
   </ItemGroup>
+	<ItemGroup>
 
+		<None Update="Persistence\Seed\Products.csv">
+
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+
+		</None>
+
+		<None Update="Persistence\Seed\Reminders.csv">
+
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+
+		</None>
+
+	</ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Configurations\" />

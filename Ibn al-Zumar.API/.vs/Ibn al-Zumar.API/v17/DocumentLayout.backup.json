@@ -3,16 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\migrations\\20260807120431_initialpostgresmigration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\migrations\\20260807120431_initialpostgresmigration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\seed\\dataseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\persistence\\seed\\dataseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\seed\\dataseederextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\persistence\\seed\\dataseederextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\seed\\seeddata.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\persistence\\seed\\seeddata.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -35,16 +47,16 @@
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\web.config||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\controllers\\reminderscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\controllers\\reminderscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\services\\reminders\\reminderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\services\\reminders\\reminderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\seed\\seeddata.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\persistence\\seed\\seeddata.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
     }
   ],
   "DocumentGroupContainers": [
@@ -63,19 +75,57 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "20260807120431_InitialPostgresMigration.cs",
-              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260807120431_InitialPostgresMigration.cs",
-              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Migrations\\20260807120431_InitialPostgresMigration.cs",
-              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260807120431_InitialPostgresMigration.cs",
-              "RelativeToolTip": "Ibn al-Zumar.API\\Migrations\\20260807120431_InitialPostgresMigration.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAABpAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-07T12:04:32.226Z",
+              "Title": "Ibn al-Zumar.API",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAcwCsAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-08-07T13:38:43.947Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
+              "Title": "DataSeederExtensions.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\DataSeederExtensions.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Persistence\\Seed\\DataSeederExtensions.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\DataSeederExtensions.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Persistence\\Seed\\DataSeederExtensions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-07T13:33:11.21Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DataSeeder.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\DataSeeder.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Persistence\\Seed\\DataSeeder.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\DataSeeder.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Persistence\\Seed\\DataSeeder.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAJIBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-07T13:33:02.866Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "SeedData.sql ",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-08-07T12:59:55.921Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "ApplicationDbContext.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Persistence\\ApplicationDbContext.cs",
@@ -87,7 +137,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "CategoriesController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\CategoriesController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\CategoriesController.cs",
@@ -99,7 +149,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "web.config",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\web.config",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\web.config",
@@ -111,7 +161,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 10,
               "Title": "web.config",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\web.config",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\web.config",
@@ -123,7 +173,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 8,
               "Title": "ProductsController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\ProductsController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\ProductsController.cs",
@@ -135,7 +185,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\appsettings.json",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\appsettings.json",
@@ -143,24 +193,11 @@
               "RelativeToolTip": "Ibn al-Zumar.API\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-08-06T08:16:42.531Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-06T08:16:42.531Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Dockerfile",
-              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Dockerfile",
-              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Dockerfile",
-              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Dockerfile",
-              "RelativeToolTip": "Ibn al-Zumar.API\\Dockerfile",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-08-05T22:39:04.876Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 11,
               "Title": "RemindersController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\RemindersController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\RemindersController.cs",
@@ -172,19 +209,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Program.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Program.cs",
               "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Program.cs",
               "RelativeToolTip": "Ibn al-Zumar.API\\Program.cs",
-              "ViewState": "AgIAALAAAAAAAAAAAAAiwNwAAAAKAAAAAAAAAA==",
+              "ViewState": "AgIAALAAAAAAAAAAAAAiwMMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-05T17:24:24.259Z"
+              "WhenOpened": "2026-08-05T17:24:24.259Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 12,
               "Title": "ReminderService.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Reminders\\ReminderService.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Services\\Reminders\\ReminderService.cs",

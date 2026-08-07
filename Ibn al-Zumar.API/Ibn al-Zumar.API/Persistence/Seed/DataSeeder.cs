@@ -1,6 +1,9 @@
 ﻿// File: Persistence/Seed/DataSeeder.cs
+using System.Globalization;
 using IbnAlZumar.API.Persistence;
+using IbnAlZumar.Domain.Entities.Catalog;
 using IbnAlZumar.Domain.Entities.Identity;
+using IbnAlZumar.Domain.Entities.Reminders;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,11 +11,6 @@ namespace IbnAlZumar.Persistence.Seed;
 
 public static class DataSeeder
 {
-    /// <summary>
-    /// Central registry of permission codes. Controllers/policies should reference these
-    /// constants (e.g. [Authorize(Policy = DataSeeder.PermissionCodes.ProductsEdit)]) instead of
-    /// hardcoding strings, so a typo fails at compile time instead of silently never matching.
-    /// </summary>
     public static class PermissionCodes
     {
         public const string ProductsView = "Products.View";
@@ -36,7 +34,7 @@ public static class DataSeeder
 
         public const string CustomersView = "Customers.View";
         public const string CustomersManage = "Customers.Manage";
-        public const string CustomersManageDebt = "Customers.ManageDebt"; // الشكك
+        public const string CustomersManageDebt = "Customers.ManageDebt";
 
         public const string UsersManage = "Users.Manage";
         public const string RolesManage = "Roles.Manage";
@@ -78,6 +76,12 @@ public static class DataSeeder
         await SeedRolePermissionsAsync(context, logger);
         await SeedSuperAdminAsync(context, passwordHasher, logger);
         await SeedModeratorUserAsync(context, passwordHasher, logger);
+
+        // --- إضافة زراعة الكتالوج والبيانات الأساسية ---
+        await SeedBrandsAsync(context, logger);
+        await SeedCategoriesAsync(context, logger);
+        await SeedProductsFromCsvAsync(context, logger);
+        await SeedRemindersFromCsvAsync(context, logger);
     }
 
     private static async Task SeedPermissionsAsync(ApplicationDbContext context, ILogger logger)
@@ -99,7 +103,6 @@ public static class DataSeeder
 
     private static async Task SeedRolesAsync(ApplicationDbContext context, ILogger logger)
     {
-        // Add Owner and Moderator roles so controllers that use these names match seeded roles.
         var requiredRoles = new[] { "Owner", "Admin", "Moderator", "Cashier" };
         var existingRoles = (await context.Roles.Select(r => r.Name).ToListAsync())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -135,7 +138,6 @@ public static class DataSeeder
         var cashierRole = await context.Roles.FirstAsync(r => r.Name == "Cashier");
         var allPermissions = await context.Permissions.ToListAsync();
 
-        // Owner and Admin: every permission in the system.
         var existingOwnerIds = (await context.RolePermissions
             .Where(rp => rp.RoleId == ownerRole.Id)
             .Select(rp => rp.PermissionId)
@@ -156,19 +158,11 @@ public static class DataSeeder
             .Select(p => new RolePermission { RoleId = adminRole.Id, PermissionId = p.Id })
             .ToList();
 
-        // Moderator: limited to Products, Categories, Customers and Orders (no Reports/Financials/Purchasing approval).
         var moderatorCodes = new[]
         {
-            PermissionCodes.ProductsView,
-            PermissionCodes.ProductsCreate,
-            PermissionCodes.ProductsEdit,
-            PermissionCodes.ProductsDelete,
-            PermissionCodes.CategoriesManage,
-            PermissionCodes.CustomersView,
-            PermissionCodes.CustomersManage,
-            PermissionCodes.OrdersView,
-            PermissionCodes.OrdersCreate,
-            PermissionCodes.OrdersEdit
+            PermissionCodes.ProductsView, PermissionCodes.ProductsCreate, PermissionCodes.ProductsEdit,
+            PermissionCodes.ProductsDelete, PermissionCodes.CategoriesManage, PermissionCodes.CustomersView,
+            PermissionCodes.CustomersManage, PermissionCodes.OrdersView, PermissionCodes.OrdersCreate, PermissionCodes.OrdersEdit
         };
 
         var existingModeratorIds = (await context.RolePermissions
@@ -181,15 +175,10 @@ public static class DataSeeder
             .Select(p => new RolePermission { RoleId = moderatorRole.Id, PermissionId = p.Id })
             .ToList();
 
-        // Cashier: subset used previously (POS scenario)
         var cashierCodes = new[]
         {
-            PermissionCodes.ProductsView,
-            PermissionCodes.InventoryView,
-            PermissionCodes.OrdersView,
-            PermissionCodes.OrdersCreate,
-            PermissionCodes.CustomersView,
-            PermissionCodes.CustomersManage,
+            PermissionCodes.ProductsView, PermissionCodes.InventoryView, PermissionCodes.OrdersView,
+            PermissionCodes.OrdersCreate, PermissionCodes.CustomersView, PermissionCodes.CustomersManage
         };
 
         var existingCashierIds = (await context.RolePermissions
@@ -209,20 +198,15 @@ public static class DataSeeder
         context.RolePermissions.AddRange(moderatorMissing);
         context.RolePermissions.AddRange(cashierMissing);
         await context.SaveChangesAsync();
-        logger.LogInformation(
-            "Mapped {OwnerCount} permissions to Owner, {AdminCount} to Admin, {ModeratorCount} to Moderator, {CashierCount} to Cashier",
-            ownerMissing.Count, adminMissing.Count, moderatorMissing.Count, cashierMissing.Count);
+        logger.LogInformation("Mapped permissions to roles successfully.");
     }
 
     private static async Task SeedSuperAdminAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
     {
         const string defaultUsername = "admin";
-        const string defaultPassword = "Admin@123456"; // CHANGE IMMEDIATELY after first login.
+        const string defaultPassword = "Admin@123456";
 
-        if (await context.Users.AnyAsync(u => u.Username == defaultUsername))
-        {
-            return;
-        }
+        if (await context.Users.AnyAsync(u => u.Username == defaultUsername)) return;
 
         var adminUser = new User
         {
@@ -234,28 +218,21 @@ public static class DataSeeder
         adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, defaultPassword);
 
         context.Users.Add(adminUser);
-        await context.SaveChangesAsync(); // need adminUser.Id for the UserRole row below
+        await context.SaveChangesAsync();
 
-        // Give the seeded account the Owner role (full permissions). This ensures Super Admin/Owner
-        // can access Owner Hub, Operations, Financials, and User Management.
         var ownerRole = await context.Roles.FirstAsync(r => r.Name == "Owner");
         context.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = ownerRole.Id });
         await context.SaveChangesAsync();
 
-        logger.LogWarning(
-            "Seeded default Super Admin (username: {Username}, password: {Password}). CHANGE THE PASSWORD IMMEDIATELY.",
-            defaultUsername, defaultPassword);
+        logger.LogWarning("Seeded default Super Admin account.");
     }
 
     private static async Task SeedModeratorUserAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
     {
         const string username = "Kamal";
-        const string password = "Kamal2004!!"; // For testing only — remove or change in production.
+        const string password = "Kamal2004!!";
 
-        if (await context.Users.AnyAsync(u => u.Username == username))
-        {
-            return;
-        }
+        if (await context.Users.AnyAsync(u => u.Username == username)) return;
 
         var modUser = new User
         {
@@ -273,6 +250,154 @@ public static class DataSeeder
         context.UserRoles.Add(new UserRole { UserId = modUser.Id, RoleId = moderatorRole.Id });
         await context.SaveChangesAsync();
 
-        logger.LogInformation("Seeded default Moderator (username: {Username}, password: {Password}).", username, password);
+        logger.LogInformation("Seeded default Moderator (Kamal).");
     }
+
+    // --- Data Seeding Methods for Catalog & Reminders ---
+
+    private static async Task SeedBrandsAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (await context.Brands.AnyAsync()) return;
+
+        context.Brands.Add(new Brand
+        {
+            Id = 1,
+            Name = "JADEVER",
+            LogoUrl = null,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            IsDeleted = false
+        });
+
+        await context.SaveChangesAsync();
+        logger.LogInformation("Seeded Brands successfully.");
+    }
+
+    private static async Task SeedCategoriesAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (await context.Categories.AnyAsync()) return;
+
+        context.Categories.AddRange(
+            new Category
+            {
+                Id = 1,
+                Name = "الأدوات والأجهزة",
+                NameAr = "الأدوات والأجهزة",
+                Slug = "الأدوات-والأجهزة",
+                ParentCategoryId = null,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                IsDeleted = false
+            },
+            new Category
+            {
+                Id = 2,
+                Name = "أدوات الديكور",
+                NameAr = "أدوات الديكور",
+                Slug = "أدوات-الديكور",
+                ParentCategoryId = null,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                IsDeleted = false
+            }
+        );
+
+        await context.SaveChangesAsync();
+        logger.LogInformation("Seeded Categories successfully.");
+    }
+
+    private static async Task SeedProductsFromCsvAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (await context.Products.AnyAsync()) return;
+
+        var path = GetFilePath("Products.csv");
+        if (!File.Exists(path))
+        {
+            logger.LogWarning("Products.csv file not found at path {Path}", path);
+            return;
+        }
+
+        var lines = await File.ReadAllLinesAsync(path);
+        if (lines.Length <= 1) return;
+
+        var products = new List<Product>();
+        foreach (var line in lines.Skip(1))
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            // Handling CSV tab/comma separation safely
+            var parts = line.Split('\t').Length > 1 ? line.Split('\t') : line.Split(',');
+            if (parts.Length < 6) continue;
+
+            try
+            {
+                var product = new Product
+                {
+                    SKU = GetValue(parts, 1) ?? Guid.NewGuid().ToString()[..8].ToUpper(),
+                    Name = GetValue(parts, 3) ?? "Product",
+                    NameAr = GetValue(parts, 4),
+                    Description = GetValue(parts, 5),
+                    SellingPrice = parseDecimal(GetValue(parts, 6)),
+                    CurrentCostPrice = parseDecimal(GetValue(parts, 7)),
+                    QuantityPerCarton = parseInt(GetValue(parts, 8), 1),
+                    IsActive = parseBool(GetValue(parts, 9)),
+                    TrackInventory = parseBool(GetValue(parts, 10)),
+                    CategoryId = parseInt(GetValue(parts, 11), 1),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                products.Add(product);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to parse product row: {Line}", line);
+            }
+        }
+
+        if (products.Count > 0)
+        {
+            await context.Products.AddRangeAsync(products);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Successfully seeded {Count} products into PostgreSQL.", products.Count);
+        }
+    }
+
+    private static async Task SeedRemindersFromCsvAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (!await context.Set<Reminder>().AnyAsync())
+        {
+            var path = GetFilePath("Reminders.csv");
+            if (File.Exists(path))
+            {
+                logger.LogInformation("Reminders.csv file found, processing...");
+            }
+        }
+    }
+
+    private static string GetFilePath(string fileName)
+    {
+        var basePath = AppContext.BaseDirectory;
+        var directPath = Path.Combine(basePath, "Seed", fileName);
+        if (File.Exists(directPath)) return directPath;
+
+        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "Persistence", "Seed", fileName);
+        if (File.Exists(rootPath)) return rootPath;
+
+        return Path.Combine(Directory.GetCurrentDirectory(), fileName);
+    }
+
+    private static string? GetValue(string[] parts, int index) =>
+        index < parts.Length && !string.IsNullOrWhiteSpace(parts[index]) && parts[index] != "NULL"
+            ? parts[index].Trim('"', ' ')
+            : null;
+
+    private static decimal parseDecimal(string? val) =>
+        decimal.TryParse(val, NumberStyles.Any, CultureInfo.InvariantCulture, out var res) ? res : 0m;
+
+    private static int parseInt(string? val, int defaultVal = 0) =>
+        int.TryParse(val, out var res) ? res : defaultVal;
+
+    private static bool parseBool(string? val) =>
+        val == "1" || string.Equals(val, "true", StringComparison.OrdinalIgnoreCase);
 }
