@@ -109,8 +109,7 @@ public class AuthService : IAuthService
 
             _context.Customers.Add(customer);
 
-            // ربط دور Customer تلقائياً للمستخدم الجديد عبر جوجل
-            var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer" || r.Name == "User");
+            var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
             if (customerRole != null)
             {
                 _context.UserRoles.Add(new UserRole
@@ -181,8 +180,7 @@ public class AuthService : IAuthService
 
         _context.Customers.Add(customer);
 
-        // ربط دور Customer تلقائياً أثناء التسجيل العادي
-        var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer" || r.Name == "User");
+        var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
         if (customerRole != null)
         {
             _context.UserRoles.Add(new UserRole
