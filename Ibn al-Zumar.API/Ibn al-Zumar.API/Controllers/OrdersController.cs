@@ -37,6 +37,7 @@ namespace IbnAlZumar.API.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
         {
             if (!ModelState.IsValid)
@@ -62,6 +63,12 @@ namespace IbnAlZumar.API.Controllers
             catch (NotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // هنا يتم التقاط أي خطأ غير متوقع (مثل خطأ في DB) لمنع انهيار الطلب بـ 500 بدون تفاصيل
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = "حدث خطأ غير متوقع أثناء معالجة الطلب.", details = ex.Message });
             }
         }
 
@@ -90,8 +97,15 @@ namespace IbnAlZumar.API.Controllers
         [Authorize]
         public async Task<IActionResult> AdvanceOrderStatus(int id)
         {
-            await _orderService.AdvanceOrderStatusAsync(id);
-            return Ok(new { message = "تم تحديث حالة الطلب بنجاح." });
+            try
+            {
+                await _orderService.AdvanceOrderStatusAsync(id);
+                return Ok(new { message = "تم تحديث حالة الطلب بنجاح." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
         }
 
         private string? GetUserEmailFromClaims()

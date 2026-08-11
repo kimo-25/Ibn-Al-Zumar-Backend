@@ -2,6 +2,7 @@
 using IbnAlZumar.Api.Common.Exceptions;
 using IbnAlZumar.Api.Common.Settings;
 using IbnAlZumar.Api.DTOs.Auth;
+using IbnAlZumar.API.Common.Exceptions;
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.Domain.Entities.Identity;
 using IbnAlZumar.Domain.Entities.Sales;
@@ -107,6 +108,18 @@ public class AuthService : IAuthService
             };
 
             _context.Customers.Add(customer);
+
+            // ربط دور Customer تلقائياً للمستخدم الجديد عبر جوجل
+            var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer" || r.Name == "User");
+            if (customerRole != null)
+            {
+                _context.UserRoles.Add(new UserRole
+                {
+                    User = user,
+                    Role = customerRole
+                });
+            }
+
             await _context.SaveChangesAsync();
         }
 
@@ -167,9 +180,21 @@ public class AuthService : IAuthService
         };
 
         _context.Customers.Add(customer);
+
+        // ربط دور Customer تلقائياً أثناء التسجيل العادي
+        var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer" || r.Name == "User");
+        if (customerRole != null)
+        {
+            _context.UserRoles.Add(new UserRole
+            {
+                User = user,
+                Role = customerRole
+            });
+        }
+
         await _context.SaveChangesAsync();
 
-        var roleNames = new List<string>();
+        var roleNames = customerRole != null ? new List<string> { customerRole.Name } : new List<string>();
         var permissionCodes = new List<string>();
 
         var token = GenerateJwtToken(user, roleNames, permissionCodes, out var expiresAtUtc);
@@ -183,6 +208,23 @@ public class AuthService : IAuthService
             Username = user.Username,
             Roles = roleNames,
             Permissions = permissionCodes
+        };
+    }
+
+    public async Task<UpdateProfileRequestDto> GetProfileAsync(int userId)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            throw new NotFoundException("User not found.");
+        }
+
+        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == user.Email);
+
+        return new UpdateProfileRequestDto
+        {
+            FullName = user.FullName,
+            Phone = customer?.Phone ?? string.Empty
         };
     }
 
@@ -229,9 +271,9 @@ public class AuthService : IAuthService
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.Username),
-            new(ClaimTypes.Email, user.Email),
-            new("fullName", user.FullName),
+            new(ClaimTypes.Name, user.Username ?? string.Empty),
+            new(ClaimTypes.Email, user.Email ?? string.Empty),
+            new("fullName", user.FullName ?? string.Empty),
         };
 
         claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
