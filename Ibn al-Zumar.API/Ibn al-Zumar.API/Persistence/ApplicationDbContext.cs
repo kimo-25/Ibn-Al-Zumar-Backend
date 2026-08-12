@@ -45,6 +45,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<CustomerLedgerEntry> CustomerLedgerEntries => Set<CustomerLedgerEntry>();
 
+    // Shipping Zones
+    public DbSet<ShippingZone> ShippingZones => Set<ShippingZone>();
+
     // ---- Identity / Dynamic RBAC ----
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
@@ -62,6 +65,8 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
+        // Explicit Table Mapping for PostgreSQL Case Sensitivity
+        modelBuilder.Entity<ShippingZone>().ToTable("shipping_zones");
         ApplyGlobalSoftDeleteFilter(modelBuilder);
         SeedMainWarehouse(modelBuilder);
     }

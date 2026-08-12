@@ -17,86 +17,95 @@ namespace Services.Sales
 
         public async Task<OrderResponseDto> CreateAsync(CreateOrderDto dto)
         {
-            // 1. حساب إجمالي المنتجات والتحقق من الأسعار
-            decimal calculatedTotal = 0;
-            var orderItems = new List<OrderItem>();
-
-            foreach (var item in dto.Items)
+            try
             {
-                var lineTotal = item.Quantity * item.UnitPrice;
-                calculatedTotal += lineTotal;
+                // 1. حساب إجمالي المنتجات والتحقق من الأسعار
+                decimal calculatedTotal = 0;
+                var orderItems = new List<OrderItem>();
 
-                orderItems.Add(new OrderItem
+                foreach (var item in dto.Items)
                 {
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice,
+                    var lineTotal = item.Quantity * item.UnitPrice;
+                    calculatedTotal += lineTotal;
+
+                    orderItems.Add(new OrderItem
+                    {
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        DiscountType = DiscountType.None,
+                        DiscountValue = 0,
+                        DiscountAmount = 0,
+                        LineTotal = lineTotal
+                    });
+                }
+
+                // 2. الحصول على المستودع الافتراضي
+                var defaultWarehouseId = await _context.Warehouses
+                    .Select(w => w.Id)
+                    .FirstOrDefaultAsync();
+
+                if (defaultWarehouseId == 0)
+                {
+                    defaultWarehouseId = 1;
+                }
+
+                // 3. إنتاج رقم الطلب
+                var orderCount = await _context.Orders.CountAsync();
+                var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{(orderCount + 1):D4}";
+
+                // 3.5 البحث عن حساب العميل لربطه بالطلب عند توفر الإيميل
+                int? customerId = null;
+                if (!string.IsNullOrEmpty(dto.CustomerEmail))
+                {
+                    var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == dto.CustomerEmail);
+                    if (customer != null)
+                    {
+                        customerId = customer.Id;
+                    }
+                }
+
+                // 4. إنشاء الطلب وربطه بالعميل
+                var order = new Order
+                {
+                    OrderNumber = orderNumber,
+                    CustomerId = customerId,
+                    GuestName = dto.CustomerName,
+                    GuestPhone = dto.CustomerPhone,
+                    ShippingAddress = dto.ShippingAddress,
+                    Notes = dto.Notes,
+                    Source = OrderSource.Online,
+                    Status = OrderStatus.PendingConfirmation,
+                    PaymentMethod = PaymentMethod.Cash,
+                    WarehouseId = defaultWarehouseId,
+                    OrderDate = DateTime.UtcNow,
+                    SubTotal = calculatedTotal,
                     DiscountType = DiscountType.None,
                     DiscountValue = 0,
                     DiscountAmount = 0,
-                    LineTotal = lineTotal
-                });
-            }
+                    TotalAmount = calculatedTotal,
+                    Items = orderItems
+                };
 
-            // 2. الحصول على المستودع الافتراضي
-            var defaultWarehouseId = await _context.Warehouses
-                .Select(w => w.Id)
-                .FirstOrDefaultAsync();
+                // 5. حفظ الطلب في قاعدة البيانات
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
 
-            if (defaultWarehouseId == 0)
-            {
-                defaultWarehouseId = 1;
-            }
-
-            // 3. إنتاج رقم الطلب
-            var orderCount = await _context.Orders.CountAsync();
-            var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{(orderCount + 1):D4}";
-
-            // 3.5 البحث عن حساب العميل لربطه بالطلب عند توفر الإيميل
-            int? customerId = null;
-            if (!string.IsNullOrEmpty(dto.CustomerEmail))
-            {
-                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == dto.CustomerEmail);
-                if (customer != null)
+                // 6. إرجاع النتيجة
+                return new OrderResponseDto
                 {
-                    customerId = customer.Id;
-                }
+                    Id = order.Id,
+                    CustomerName = order.GuestName ?? string.Empty,
+                    TotalAmount = order.TotalAmount,
+                    CreatedAt = order.OrderDate
+                };
             }
-
-            // 4. إنشاء الطلب وربطه بالعميل
-            var order = new Order
+            catch (DbUpdateException ex)
             {
-                OrderNumber = orderNumber,
-                CustomerId = customerId,
-                GuestName = dto.CustomerName,
-                GuestPhone = dto.CustomerPhone,
-                ShippingAddress = dto.ShippingAddress,
-                Notes = dto.Notes,
-                Source = OrderSource.Online,
-                Status = OrderStatus.PendingConfirmation,
-                PaymentMethod = PaymentMethod.Cash,
-                WarehouseId = defaultWarehouseId,
-                OrderDate = DateTime.UtcNow,
-                SubTotal = calculatedTotal,
-                DiscountType = DiscountType.None,
-                DiscountValue = 0,
-                DiscountAmount = 0,
-                TotalAmount = calculatedTotal,
-                Items = orderItems
-            };
-
-            // 5. حفظ الطلب في قاعدة البيانات
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
-
-            // 6. إرجاع النتيجة
-            return new OrderResponseDto
-            {
-                Id = order.Id,
-                CustomerName = order.GuestName ?? string.Empty,
-                TotalAmount = order.TotalAmount,
-                CreatedAt = order.OrderDate
-            };
+                // التقاط الخطأ الحقيقي القادم من قاعدة البيانات (PostgreSQL Inner Exception)
+                var innerMessage = ex.InnerException?.Message ?? ex.Message;
+                throw new Exception($"Database Error: {innerMessage}");
+            }
         }
 
         public async Task<List<CustomerOrderDto>> GetMyOrdersAsync(string userEmail)
@@ -155,8 +164,13 @@ namespace Services.Sales
                 else if (order.Status == OrderStatus.Shipped)
                     order.Status = OrderStatus.Delivered;
 
-                await _context.SaveChangesAsync();
+                await _netCoreContextSaveAsync(); // أو _context.SaveChangesAsync()
             }
+        }
+
+        private async Task _netCoreContextSaveAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

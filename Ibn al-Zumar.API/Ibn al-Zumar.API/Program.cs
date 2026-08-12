@@ -214,8 +214,14 @@ app.UseAuthorization();
 app.MapControllers();
 
 // ---------------------------------------------------------------------------
-// Seed database: applies pending migrations, then Roles/Permissions/Super Admin.
+// Auto-Apply Migrations & Seed database
 // ---------------------------------------------------------------------------
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
 await app.SeedDatabaseAsync();
 
 app.Run();
