@@ -48,15 +48,24 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSett
 // ---------------------------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// تحويل DATABASE_URL التلقائي الخاص بمنصات Cloud Hosting (زي Railway) إلى Connection String يقرأه PostgreSQL
 var envDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
 {
+    // لو الرابط جاي بصيغة جاهزة مأخوذة من مرجع Railway أو رابط اتصال مباشر
     if (envDatabaseUrl.StartsWith("postgres://") || envDatabaseUrl.StartsWith("postgresql://"))
     {
-        var databaseUri = new Uri(envDatabaseUrl);
-        var userInfo = databaseUri.UserInfo.Split(':');
-        connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Prefer;Trust Server Certificate=true";
+        try
+        {
+            var databaseUri = new Uri(envDatabaseUrl);
+            var userInfo = databaseUri.UserInfo.Split(':');
+            var password = userInfo.Length > 1 ? userInfo[1] : string.Empty;
+            connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Prefer;Trust Server Certificate=true";
+        }
+        catch
+        {
+            // لو الرابط مش Uri صريح (يعني بصيغة مرجع Railway داخلي)، ناخذه كما هو كـ Connection String جاهز
+            connectionString = envDatabaseUrl;
+        }
     }
     else
     {
