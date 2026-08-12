@@ -51,19 +51,22 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 var envDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
 {
-    // لو الرابط جاي بصيغة جاهزة مأخوذة من مرجع Railway أو رابط اتصال مباشر
-    if (envDatabaseUrl.StartsWith("postgres://") || envDatabaseUrl.StartsWith("postgresql://"))
+    // لو الـ URL جاي بصيغة postgres:// أو postgresql://
+    if (envDatabaseUrl.Contains("://"))
     {
         try
         {
             var databaseUri = new Uri(envDatabaseUrl);
             var userInfo = databaseUri.UserInfo.Split(':');
-            var password = userInfo.Length > 1 ? userInfo[1] : string.Empty;
-            connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Prefer;Trust Server Certificate=true";
+            var user = userInfo.Length > 0 ? userInfo[0] : "postgres";
+            var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+            var dbPort = databaseUri.Port > 0 ? databaseUri.Port : 5432;
+            var dbName = databaseUri.AbsolutePath.TrimStart('/');
+
+            connectionString = $"Host={databaseUri.Host};Port={dbPort};Database={dbName};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true;";
         }
         catch
         {
-            // لو الرابط مش Uri صريح (يعني بصيغة مرجع Railway داخلي)، ناخذه كما هو كـ Connection String جاهز
             connectionString = envDatabaseUrl;
         }
     }
