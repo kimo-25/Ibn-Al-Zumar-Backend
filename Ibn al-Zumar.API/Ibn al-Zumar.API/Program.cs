@@ -20,15 +20,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Npgsql;
 using Services.Sales;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------------------------------------------------------------
-// Configure URLs for Railway / Render / Container hosting
+// Configure URLs for Container hosting / Azure
 // ---------------------------------------------------------------------------
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(port))
@@ -45,43 +45,11 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 // ---------------------------------------------------------------------------
-// DbContext (PostgreSQL Provider with robust URI parsing for Railway)
+// DbContext (SQL Server Configuration for Azure / Local)
 // ---------------------------------------------------------------------------
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var envDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
-{
-    try
-    {
-        if (envDatabaseUrl.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
-            envDatabaseUrl.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
-        {
-            var uri = new Uri(envDatabaseUrl);
-            var userInfo = uri.UserInfo.Split(':', 2);
-
-            var builderConn = new NpgsqlConnectionStringBuilder
-            {
-                Host = uri.Host,
-                Port = uri.Port > 0 ? uri.Port : 5432,
-                Database = uri.AbsolutePath.TrimStart('/'),
-                Username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "postgres",
-                Password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "",
-                SslMode = SslMode.Require
-            };
-
-            connectionString = builderConn.ConnectionString;
-        }
-        else
-        {
-            connectionString = envDatabaseUrl;
-        }
-    }
-    catch
-    {
-        connectionString = envDatabaseUrl;
-    }
-}
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("DATABASE_URL");
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
@@ -89,7 +57,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseSqlServer(connectionString));
 
 // ---------------------------------------------------------------------------
 // Password hashing — Standalone PasswordHasher<User>
@@ -147,7 +115,7 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler
 builder.Services.AddAuthorization();
 
 // ---------------------------------------------------------------------------
-// CORS Policy (Permissive Policy for Deployed Frontend Compatibility)
+// CORS Policy
 // ---------------------------------------------------------------------------
 const string CorsPolicyName = "PosFrontend";
 
@@ -206,15 +174,14 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------
 // Middleware pipeline
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseForwardedHeaders();
 
-// Enable Swagger in all environments so it works on Railway / Render
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -223,13 +190,21 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseStaticFiles();
+// ---------------------------------------------------------------------------
+// Custom Static Files Configuration (يدعم .webp والـ Static Files بالمسار الصحيح)
+// ---------------------------------------------------------------------------
+var contentTypeProvider = new FileExtensionContentTypeProvider();
+contentTypeProvider.Mappings[".webp"] = "image/webp";
 
-// ---------------------------------------------------------------------------
-// Routing & CORS & Auth Pipeline Order
-// ---------------------------------------------------------------------------
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = contentTypeProvider,
+    ServeUnknownFileTypes = true
+});
+
 app.UseRouting();
 
+// تفعيل سياسة الـ CORS بالاسم الصحيح
 app.UseCors(CorsPolicyName);
 
 app.UseAuthentication();

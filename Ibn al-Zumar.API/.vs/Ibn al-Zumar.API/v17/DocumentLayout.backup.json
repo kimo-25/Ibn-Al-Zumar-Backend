@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812234406_AddGovernorateAndEstimatedDaysToShippingZone.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Ibn al-Zumar.API\\Migrations\\20260812234406_AddGovernorateAndEstimatedDaysToShippingZone.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\domain\\entities\\sales\\shippingzone.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\domain\\entities\\sales\\shippingzone.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -11,8 +19,28 @@
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\ibn al-zumar.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\ibn al-zumar.api.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\ibn al-zumar.api.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\migrations\\20260812200229_addshippingzones.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\migrations\\20260812200229_addshippingzones.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\migrations\\20260812200229_addshippingzones.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\migrations\\20260812200229_addshippingzones.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\persistence\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\persistence\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812195352_AddShippingTable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Ibn al-Zumar.API\\Migrations\\20260812195352_AddShippingTable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\services\\auth\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -33,10 +61,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812172047_AddShippingZoneFields.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Ibn al-Zumar.API\\Migrations\\20260812172047_AddShippingZoneFields.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\domain\\entities\\sales\\shippingzone.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|solutionrelative:ibn al-zumar.api\\domain\\entities\\sales\\shippingzone.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{833B3B79-574D-7E0D-BDFE-652A0D37DB15}|Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj|c:\\users\\kamal mohamed\\desktop\\ibn al-zumar\\ibn al-zumar.api\\ibn al-zumar.api\\services\\sales\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -99,12 +123,25 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "20260812234406_AddGovernorateAndEstimatedDaysToShippingZone.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812234406_AddGovernorateAndEstimatedDaysToShippingZone.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Migrations\\20260812234406_AddGovernorateAndEstimatedDaysToShippingZone.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812234406_AddGovernorateAndEstimatedDaysToShippingZone.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Migrations\\20260812234406_AddGovernorateAndEstimatedDaysToShippingZone.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-12T23:44:06.88Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Program.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Program.cs",
               "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Program.cs",
               "RelativeToolTip": "Ibn al-Zumar.API\\Program.cs",
-              "ViewState": "AgIAAMkAAAAAAAAAAAAiwPUAAAAKAAAAAAAAAA==",
+              "ViewState": "AgIAAK4AAAAAAAAAAAAuwOEAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-08-12T17:26:51.181Z",
               "EditorCaption": ""
@@ -112,6 +149,54 @@
             {
               "$type": "Document",
               "DocumentIndex": 6,
+              "Title": "20260812200229_AddShippingZones.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812200229_AddShippingZones.Designer.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Migrations\\20260812200229_AddShippingZones.Designer.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812200229_AddShippingZones.Designer.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Migrations\\20260812200229_AddShippingZones.Designer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-12T20:06:00.201Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "20260812200229_AddShippingZones.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812200229_AddShippingZones.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Migrations\\20260812200229_AddShippingZones.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812200229_AddShippingZones.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Migrations\\20260812200229_AddShippingZones.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAACUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-12T20:02:29.767Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "20260812195352_AddShippingTable.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812195352_AddShippingTable.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Migrations\\20260812195352_AddShippingTable.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812195352_AddShippingTable.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Migrations\\20260812195352_AddShippingTable.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-12T19:53:53.138Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Ibn al-Zumar.API.csproj",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-08-12T20:42:11.105Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "20260812172422_InitialCreate.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812172422_InitialCreate.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Migrations\\20260812172422_InitialCreate.cs",
@@ -123,7 +208,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 14,
               "Title": "20260812172047_AddShippingZoneFields.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812172047_AddShippingZoneFields.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Migrations\\20260812172047_AddShippingZoneFields.cs",
@@ -135,7 +220,44 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\appsettings.json",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\appsettings.json",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\appsettings.json",
+              "RelativeToolTip": "Ibn al-Zumar.API\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-08-06T08:16:42.531Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ShippingZone.cs",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Domain\\Entities\\Sales\\ShippingZone.cs",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Domain\\Entities\\Sales\\ShippingZone.cs",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Domain\\Entities\\Sales\\ShippingZone.cs",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Domain\\Entities\\Sales\\ShippingZone.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-12T16:08:05.83Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Ibn al-Zumar.API",
+              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "RelativeToolTip": "Ibn al-Zumar.API\\Ibn al-Zumar.API.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-08-12T20:42:07.75Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
               "Title": "ShippingZonesController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\ShippingZonesController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\ShippingZonesController.cs",
@@ -147,19 +269,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ShippingZone.cs",
-              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Domain\\Entities\\Sales\\ShippingZone.cs",
-              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Domain\\Entities\\Sales\\ShippingZone.cs",
-              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Domain\\Entities\\Sales\\ShippingZone.cs",
-              "RelativeToolTip": "Ibn al-Zumar.API\\Domain\\Entities\\Sales\\ShippingZone.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-12T16:08:05.83Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 21,
               "Title": "SeedData.sql",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Persistence\\Seed\\SeedData.sql",
@@ -170,31 +280,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\appsettings.json",
-              "RelativeDocumentMoniker": "Ibn al-Zumar.API\\appsettings.json",
-              "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\appsettings.json",
-              "RelativeToolTip": "Ibn al-Zumar.API\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-08-06T08:16:42.531Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 8,
               "Title": "ApplicationDbContext.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Persistence\\ApplicationDbContext.cs",
               "ToolTip": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Persistence\\ApplicationDbContext.cs",
               "RelativeToolTip": "Ibn al-Zumar.API\\Persistence\\ApplicationDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGkAAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAAFIAAAAAAAAAAAAwwIIAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-08-07T11:22:18.097Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 10,
               "Title": "AuthService.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Auth\\AuthService.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Services\\Auth\\AuthService.cs",
@@ -206,7 +304,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 12,
               "Title": "20260812173124_AddShippingZoneTable.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Migrations\\20260812173124_AddShippingZoneTable.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Migrations\\20260812173124_AddShippingZoneTable.cs",
@@ -218,7 +316,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 16,
               "Title": "CreateOrderDto.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\DTOs\\Sales\\CreateOrderDto.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\DTOs\\Sales\\CreateOrderDto.cs",
@@ -230,7 +328,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 15,
               "Title": "OrderService.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Sales\\OrderService.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Services\\Sales\\OrderService.cs",
@@ -242,7 +340,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 18,
               "Title": "AuthController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\AuthController.cs",
@@ -254,7 +352,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 23,
               "Title": "CategoriesController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\CategoriesController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\CategoriesController.cs",
@@ -266,7 +364,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 22,
               "Title": "web.config",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\web.config",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\web.config",
@@ -278,7 +376,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 24,
               "Title": "web.config",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\web.config",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\web.config",
@@ -290,7 +388,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 19,
               "Title": "ProductsController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\ProductsController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\ProductsController.cs",
@@ -302,7 +400,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 17,
               "Title": "RemindersController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\RemindersController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\RemindersController.cs",
@@ -314,7 +412,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 20,
               "Title": "RolesController.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Controllers\\RolesController.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Controllers\\RolesController.cs",
@@ -326,7 +424,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 25,
               "Title": "ReminderService.cs",
               "DocumentMoniker": "C:\\Users\\Kamal Mohamed\\Desktop\\Ibn al-Zumar\\Ibn al-Zumar.API\\Ibn al-Zumar.API\\Services\\Reminders\\ReminderService.cs",
               "RelativeDocumentMoniker": "Ibn al-Zumar.API\\Services\\Reminders\\ReminderService.cs",
