@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using Services.Sales;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,33 +45,39 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 // ---------------------------------------------------------------------------
-// DbContext (PostgreSQL Provider)
+// DbContext (PostgreSQL Provider with robust parsing)
 // ---------------------------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 var envDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
 {
-    // لو الـ URL جاي بصيغة postgres:// أو postgresql://
-    if (envDatabaseUrl.Contains("://"))
+    try
     {
-        try
+        if (envDatabaseUrl.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+            envDatabaseUrl.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
         {
-            var databaseUri = new Uri(envDatabaseUrl);
-            var userInfo = databaseUri.UserInfo.Split(':');
-            var user = userInfo.Length > 0 ? userInfo[0] : "postgres";
-            var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
-            var dbPort = databaseUri.Port > 0 ? databaseUri.Port : 5432;
-            var dbName = databaseUri.AbsolutePath.TrimStart('/');
+            var uri = new Uri(envDatabaseUrl);
+            var userInfo = uri.UserInfo.Split(':', 2);
 
-            connectionString = $"Host={databaseUri.Host};Port={dbPort};Database={dbName};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true;";
+            var builderConn = new NpgsqlConnectionStringBuilder
+            {
+                Host = uri.Host,
+                Port = uri.Port > 0 ? uri.Port : 5432,
+                Database = uri.AbsolutePath.TrimStart('/'),
+                Username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "postgres",
+                Password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "",
+                SslMode = SslMode.Require
+            };
+
+            connectionString = builderConn.ConnectionString;
         }
-        catch
+        else
         {
             connectionString = envDatabaseUrl;
         }
     }
-    else
+    catch
     {
         connectionString = envDatabaseUrl;
     }
