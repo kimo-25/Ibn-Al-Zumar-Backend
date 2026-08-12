@@ -45,42 +45,23 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 // ---------------------------------------------------------------------------
-// DbContext (PostgreSQL Provider with robust parsing)
+// DbContext (PostgreSQL Provider)
 // ---------------------------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-var envDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
+// Fallback to DATABASE_URL if ConnectionStrings:DefaultConnection is not provided
+if (string.IsNullOrWhiteSpace(connectionString))
 {
-    try
-    {
-        if (envDatabaseUrl.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
-            envDatabaseUrl.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
-        {
-            var uri = new Uri(envDatabaseUrl);
-            var userInfo = uri.UserInfo.Split(':', 2);
-
-            var builderConn = new NpgsqlConnectionStringBuilder
-            {
-                Host = uri.Host,
-                Port = uri.Port > 0 ? uri.Port : 5432,
-                Database = uri.AbsolutePath.TrimStart('/'),
-                Username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "postgres",
-                Password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "",
-                SslMode = SslMode.Require
-            };
-
-            connectionString = builderConn.ConnectionString;
-        }
-        else
-        {
-            connectionString = envDatabaseUrl;
-        }
-    }
-    catch
+    var envDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    if (!string.IsNullOrWhiteSpace(envDatabaseUrl))
     {
         connectionString = envDatabaseUrl;
     }
+}
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Database connection string is missing.");
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
