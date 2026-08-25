@@ -10,18 +10,22 @@ namespace IbnAlZumar.API.Ai.Models
     public class GeminiRequest
     {
         [JsonPropertyName("systemInstruction")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public GeminiContent? SystemInstruction { get; set; }
 
         [JsonPropertyName("contents")]
         public List<GeminiContent> Contents { get; set; } = new();
 
         [JsonPropertyName("tools")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<GeminiTool>? Tools { get; set; }
 
         [JsonPropertyName("toolConfig")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public GeminiToolConfig? ToolConfig { get; set; }
 
         [JsonPropertyName("generationConfig")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public GeminiGenerationConfig? GenerationConfig { get; set; }
     }
 
@@ -49,8 +53,9 @@ namespace IbnAlZumar.API.Ai.Models
 
     public class GeminiContent
     {
-        /// <summary>"user" | "model" | "function"</summary>
+        /// <summary>"user" | "model"</summary>
         [JsonPropertyName("role")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Role { get; set; }
 
         [JsonPropertyName("parts")]
@@ -60,23 +65,34 @@ namespace IbnAlZumar.API.Ai.Models
     public class GeminiPart
     {
         [JsonPropertyName("text")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Text { get; set; }
 
         [JsonPropertyName("functionCall")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public GeminiFunctionCall? FunctionCall { get; set; }
 
         [JsonPropertyName("functionResponse")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public GeminiFunctionResponse? FunctionResponse { get; set; }
 
-        /// <summary>
-        /// NEW — raw bytes (base64) for multimodal input: images (jpeg/png/webp) and PDFs.
-        /// Gemini 1.5 reads these natively (OCR, layout, tables) without any server-side
-        /// text extraction. Office formats (docx/xlsx) are NOT accepted here — those are
-        /// extracted to plain text server-side and sent as a normal text part instead
-        /// (see AiFileProcessingService).
-        /// </summary>
         [JsonPropertyName("inlineData")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public GeminiInlineData? InlineData { get; set; }
+
+        /// <summary>
+        /// Required by Gemini 2.x/3.x "thinking" models for multi-turn function calling.
+        /// IMPORTANT: this lives on the Part itself, as a SIBLING of "functionCall" —
+        /// NOT nested inside GeminiFunctionCall, and NEVER present on a functionResponse
+        /// part. Gemini returns it attached to the Part that carries the functionCall;
+        /// we must echo that exact Part (including this field) back unchanged when we
+        /// send the following turn, or the API rejects the request with
+        /// "Function call is missing a thought_signature...".
+        /// JSON key is camelCase per the v1beta REST spec: "thoughtSignature".
+        /// </summary>
+        [JsonPropertyName("thoughtSignature")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ThoughtSignature { get; set; }
 
         public static GeminiPart FromText(string text) => new() { Text = text };
 
@@ -89,7 +105,6 @@ namespace IbnAlZumar.API.Ai.Models
         [JsonPropertyName("mimeType")]
         public string MimeType { get; set; } = string.Empty;
 
-        /// <summary>Base64-encoded raw file bytes.</summary>
         [JsonPropertyName("data")]
         public string Data { get; set; } = string.Empty;
     }
@@ -102,13 +117,8 @@ namespace IbnAlZumar.API.Ai.Models
         [JsonPropertyName("args")]
         public JsonElement Args { get; set; }
 
-        /// <summary>
-        /// NEW (v1beta+): Required for multi-turn function calling in newer Gemini models.
-        /// Preserves the thought_signature from the model's function call and sends it back
-        /// when continuing the conversation to avoid BadRequest errors.
-        /// </summary>
-        [JsonPropertyName("thoughtSignature")]
-        public string? ThoughtSignature { get; set; }
+        // NOTE: thoughtSignature intentionally does NOT live here — see GeminiPart.ThoughtSignature.
+        // Gemini's REST schema puts it as a sibling of "functionCall" on the Part, not inside it.
     }
 
     public class GeminiFunctionResponse
@@ -119,12 +129,9 @@ namespace IbnAlZumar.API.Ai.Models
         [JsonPropertyName("response")]
         public object Response { get; set; } = new { };
 
-        /// <summary>
-        /// NEW (v1beta+): Required for multi-turn function calling in newer Gemini models.
-        /// Must match the thoughtSignature from the corresponding functionCall.
-        /// </summary>
-        [JsonPropertyName("thoughtSignature")]
-        public string? ThoughtSignature { get; set; }
+        // NOTE: no thoughtSignature here, ever. A functionResponse part must NOT carry one —
+        // sending it there is exactly what produces:
+        // 'Unknown name "thoughtSignature" at contents[...].parts[...].function_response'
     }
 
     public class GeminiTool
@@ -141,7 +148,6 @@ namespace IbnAlZumar.API.Ai.Models
         [JsonPropertyName("description")]
         public string Description { get; set; } = string.Empty;
 
-        /// <summary>Raw OpenAPI-subset JSON schema object (see IAiTool.ParametersSchema).</summary>
         [JsonPropertyName("parameters")]
         public object Parameters { get; set; } = new { };
     }

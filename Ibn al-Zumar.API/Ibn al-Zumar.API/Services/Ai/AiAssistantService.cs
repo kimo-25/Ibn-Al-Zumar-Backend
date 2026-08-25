@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using IbnAlZumar.Api.Common.Settings;
 using IbnAlZumar.API.Ai.Files;
 using IbnAlZumar.API.Ai.Models;
@@ -19,7 +20,11 @@ namespace IbnAlZumar.API.Ai
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AiAssistantService> _logger;
 
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+        // تجاهل القيم الـ null عند السريالة لمنع خطأ Unknown Field في Gemini API
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
 
         public AiAssistantService(
             HttpClient httpClient,
@@ -90,6 +95,7 @@ namespace IbnAlZumar.API.Ai
                     return new AiChatResponseDto { Reply = "حدث خطأ أثناء التواصل مع المساعد الذكي.", ToolsUsed = toolsUsed };
                 }
 
+                // الحفاظ على استجابة الـ model كاملة بالتاريخ (بما فيها الـ FunctionCalls و الـ thought_signature القادم من جوجل)
                 contents.Add(new GeminiContent { Role = "model", Parts = modelContent.Parts });
 
                 var functionCalls = modelContent.Parts.Where(p => p.FunctionCall != null).ToList();
@@ -155,20 +161,16 @@ namespace IbnAlZumar.API.Ai
                         }
                     }
 
-                    // NEW (v1beta+): Preserve thoughtSignature from the model's function call
-                    // and include it in the function response to satisfy newer Gemini models
                     responseParts.Add(new GeminiPart
                     {
                         FunctionResponse = new GeminiFunctionResponse
                         {
                             Name = call.Name,
-                            Response = toolResult,
-                            ThoughtSignature = call.ThoughtSignature
+                            Response = toolResult
                         }
                     });
                 }
 
-                // تم التعديل هنا: استخدام Role = "user" بدلاً من "function" ليتوافق مع API الإصدارات الحديثة
                 contents.Add(new GeminiContent { Role = "user", Parts = responseParts });
             }
 
@@ -264,22 +266,19 @@ namespace IbnAlZumar.API.Ai
                 _settings.BaseUrl,
                 _settings.Model);
 
-            // بناء الـ URL بشكل صحيح: نزيل أي تكرار لكلمة models/ ونضمن أن الصيغة صحيحة
             var baseUrl = _settings.BaseUrl.TrimEnd('/');
             var model = _settings.Model.Trim();
-            
-            // التأكد من عدم وجود تكرار لـ models/ في اسم الموديل
+
             if (model.StartsWith("models/", StringComparison.OrdinalIgnoreCase))
             {
                 model = model.Substring("models/".Length);
             }
-            
+
             var url = $"{baseUrl}/models/{model}:generateContent?key={_settings.ApiKey}";
 
             _logger.LogInformation("Gemini Final URL: {Url}", url);
 
-            // تسجيل طلب الـ JSON بالكامل لعرض التفاصيل المتبادلة مع Gemini في الـ Logs
-            var requestJson = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
+            var requestJson = JsonSerializer.Serialize(request, JsonOptions);
             _logger.LogInformation("Gemini Request Body: {Request}", requestJson);
 
             using var httpResponse = await _httpClient.PostAsJsonAsync(url, request, JsonOptions, ct);
@@ -293,7 +292,7 @@ namespace IbnAlZumar.API.Ai
                     url,
                     requestJson,
                     errorBody);
-                    
+
                 throw new InvalidOperationException($"تعذر الاتصال بخدمة المساعد الذكي حالياً (Status: {httpResponse.StatusCode}).");
             }
 
