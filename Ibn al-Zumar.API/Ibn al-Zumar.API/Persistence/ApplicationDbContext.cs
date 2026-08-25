@@ -1,5 +1,6 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using IbnAlZumar.Domain.Common;
+using IbnAlZumar.Domain.Entities.Attendance;
 using IbnAlZumar.Domain.Entities.Catalog;
 using IbnAlZumar.Domain.Entities.Identity;
 using IbnAlZumar.Domain.Entities.Inventory;
@@ -38,6 +39,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
 
+    // ---- Purchasing / Supplier Accounting ----
+    public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
+    public DbSet<SupplierLedgerEntry> SupplierLedgerEntries => Set<SupplierLedgerEntry>();
+
     // ---- Sales ----
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Order> Orders => Set<Order>();
@@ -45,7 +50,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<CustomerLedgerEntry> CustomerLedgerEntries => Set<CustomerLedgerEntry>();
 
-    // Shipping Zones
+    // ---- Shipping Zones ----
     public DbSet<ShippingZone> ShippingZones => Set<ShippingZone>();
 
     // ---- Identity / Dynamic RBAC ----
@@ -59,15 +64,104 @@ public class ApplicationDbContext : DbContext
     // ---- Reminders ----
     public DbSet<Reminder> Reminders => Set<Reminder>();
 
+    // ---- Maintenance ----
+    public DbSet<IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest> MaintenanceRequests => Set<IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest>();
+
+    // ---- Attendance & Payroll (Voice Biometric Attendance) ----
+    public DbSet<AttendanceLog> AttendanceLogs => Set<AttendanceLog>();
+    public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        // ��� ����� ������� ����� ���� decimal ����� ��������� ���� �������
+        configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        // Explicit Table Mapping for PostgreSQL Case Sensitivity
-        modelBuilder.Entity<ShippingZone>().ToTable("shipping_zones");
+        // ClientUuid Unique Filtered Index for Offline Sync Idempotency (SQL Server standard filter)
+        modelBuilder.Entity<Order>()
+            .HasIndex(o => o.ClientUuid)
+            .IsUnique()
+            .HasFilter("[ClientUuid] IS NOT NULL");
+
+        modelBuilder.Entity<AttendanceLog>()
+            .HasOne(a => a.User)
+            .WithMany(u => u.AttendanceLogs)
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AttendanceLog>()
+            .HasIndex(a => new { a.UserId, a.CheckInTime });
+
+        modelBuilder.Entity<PayrollRecord>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.PayrollRecords)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ---- Supplier Accounting (Ledger & Payments) ----
+
+        modelBuilder.Entity<SupplierPayment>()
+            .HasOne(sp => sp.Supplier)
+            .WithMany(s => s.Payments)
+            .HasForeignKey(sp => sp.SupplierId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SupplierPayment>()
+            .HasOne(sp => sp.PurchaseOrder)
+            .WithMany()
+            .HasForeignKey(sp => sp.PurchaseOrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SupplierPayment>()
+            .HasOne(sp => sp.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(sp => sp.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SupplierPayment>()
+            .HasIndex(sp => new { sp.SupplierId, sp.PaymentDate });
+
+        modelBuilder.Entity<SupplierLedgerEntry>()
+            .HasOne(sl => sl.Supplier)
+            .WithMany(s => s.LedgerEntries)
+            .HasForeignKey(sl => sl.SupplierId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SupplierLedgerEntry>()
+            .HasOne(sl => sl.RelatedPurchaseOrder)
+            .WithMany()
+            .HasForeignKey(sl => sl.RelatedPurchaseOrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SupplierLedgerEntry>()
+            .HasOne(sl => sl.RelatedPayment)
+            .WithMany(sp => sp.LedgerEntries)
+            .HasForeignKey(sl => sl.RelatedPaymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SupplierLedgerEntry>()
+            .HasIndex(sl => new { sl.SupplierId, sl.TransactionDate });
+
         ApplyGlobalSoftDeleteFilter(modelBuilder);
+
+        // �� ����� EF Core 10622 ����� �������� �������� �������� �� Joint Tables
+        modelBuilder.Entity<RolePermission>()
+            .HasQueryFilter(rp => !rp.Permission.IsDeleted);
+
+        modelBuilder.Entity<UserPermission>()
+            .HasQueryFilter(up => !up.Permission.IsDeleted);
+
+        modelBuilder.Entity<UserRole>()
+            .HasQueryFilter(ur => !ur.Role.IsDeleted);
+
         SeedMainWarehouse(modelBuilder);
     }
 

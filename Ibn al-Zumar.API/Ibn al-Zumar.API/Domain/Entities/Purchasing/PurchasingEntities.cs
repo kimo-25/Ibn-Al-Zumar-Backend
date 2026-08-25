@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using IbnAlZumar.Domain.Common;
 using IbnAlZumar.Domain.Entities.Catalog;
+using IbnAlZumar.Domain.Entities.Identity;
 using IbnAlZumar.Domain.Entities.Inventory;
 using IbnAlZumar.Domain.Enums;
 
@@ -30,6 +31,10 @@ public class Supplier : BaseEntity
     public decimal CurrentBalance { get; set; }
 
     public ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
+
+    // ---- Supplier Accounting ----
+    public ICollection<SupplierPayment> Payments { get; set; } = new List<SupplierPayment>();
+    public ICollection<SupplierLedgerEntry> LedgerEntries { get; set; } = new List<SupplierLedgerEntry>();
 }
 
 /// <summary>
@@ -78,4 +83,62 @@ public class PurchaseOrderItem : BaseEntity
 
     public decimal UnitCostPrice { get; set; }
     public decimal LineTotal { get; set; }
+}
+
+/// <summary>
+/// A financial payment made to a supplier. Optionally tied to a specific PurchaseOrder,
+/// but can also stand alone (e.g. paying down general balance / an old debt).
+/// </summary>
+public class SupplierPayment : BaseEntity
+{
+    public int SupplierId { get; set; }
+    public Supplier Supplier { get; set; } = null!;
+
+    public int? PurchaseOrderId { get; set; }
+    public PurchaseOrder? PurchaseOrder { get; set; }
+
+    public decimal Amount { get; set; }
+
+    public SupplierPaymentMethod PaymentMethod { get; set; }
+
+    public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
+
+    [MaxLength(500)]
+    public string? Notes { get; set; }
+
+    /// <summary>User who recorded the payment (e.g. Owner/Admin/Cashier). Optional for system-generated entries.</summary>
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
+    public ICollection<SupplierLedgerEntry> LedgerEntries { get; set; } = new List<SupplierLedgerEntry>();
+}
+
+/// <summary>
+/// A single line on a Supplier's statement of account (running balance ledger).
+/// Written automatically whenever a PurchaseOrder is Received (PurchaseInvoice) or a
+/// SupplierPayment is recorded (Payment), and can also be written manually for Adjustment/Refund.
+/// </summary>
+public class SupplierLedgerEntry : BaseEntity
+{
+    public int SupplierId { get; set; }
+    public Supplier Supplier { get; set; } = null!;
+
+    public SupplierLedgerTransactionType TransactionType { get; set; }
+
+    /// <summary>Signed movement for this entry (positive increases what we owe, negative decreases it).</summary>
+    public decimal Amount { get; set; }
+
+    /// <summary>Supplier.CurrentBalance snapshot immediately after this entry was applied.</summary>
+    public decimal RunningBalance { get; set; }
+
+    public int? RelatedPurchaseOrderId { get; set; }
+    public PurchaseOrder? RelatedPurchaseOrder { get; set; }
+
+    public int? RelatedPaymentId { get; set; }
+    public SupplierPayment? RelatedPayment { get; set; }
+
+    public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
+
+    [MaxLength(500)]
+    public string? Notes { get; set; }
 }

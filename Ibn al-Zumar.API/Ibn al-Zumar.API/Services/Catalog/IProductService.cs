@@ -9,5 +9,8 @@ namespace IbnAlZumar.API.Services.Catalog
         Task<ProductResponseDto> CreateAsync(CreateProductDto dto);
         Task<ProductResponseDto> UpdateAsync(int id, UpdateProductDto dto);
         Task DeleteAsync(int id);
+
+        // 👈 إضافة تعريف دالة الإدخال المجمع
+        Task<BulkImportResultDto> BulkImportAsync(Stream fileStream);
     }
 }

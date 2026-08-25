@@ -28,10 +28,19 @@ public class DashboardController : ControllerBase
         var totalCustomers = await _context.Customers.AsNoTracking().CountAsync();
         var totalProducts = await _context.Products.AsNoTracking().CountAsync();
 
-        // Try some product/inventory summary
-        var lowStock = await _context.Products.AsNoTracking()
-            .Where(p => p.QuantityPerCarton <= 5)
-            .CountAsync();
+        // Low-stock summary: real current stock (sum of ProductStock.Quantity) vs. MinStockThreshold,
+        // instead of the previous placeholder that compared against QuantityPerCarton.
+        var lowStockQuery = _context.Products.AsNoTracking()
+            .Where(p => p.TrackInventory && p.IsActive)
+            .Select(p => new
+            {
+                CurrentStock = p.Stocks.Sum(s => (int?)s.QuantityOnHand) ?? 0,
+                p.MinStockThreshold
+            })
+            .Where(p => p.CurrentStock <= p.MinStockThreshold);
+
+        var lowStock = await lowStockQuery.CountAsync();
+        var outOfStock = await lowStockQuery.CountAsync(p => p.CurrentStock <= 0);
 
         return Ok(new
         {
@@ -39,7 +48,8 @@ public class DashboardController : ControllerBase
             TotalOrders = totalOrders,
             TotalCustomers = totalCustomers,
             TotalProducts = totalProducts,
-            LowStockCount = lowStock
+            LowStockCount = lowStock,
+            OutOfStockCount = outOfStock
         });
     }
 
@@ -72,11 +82,23 @@ public class DashboardController : ControllerBase
             .Select(o => new { o.Id, o.TotalAmount, o.CreatedAt })
             .ToListAsync();
 
+        // Same low-stock aggregate as the owner summary, exposed here too so the
+        // Operations hub can badge the "ÊäÈíåÇÊ ÇáäæÇÞÕ" tab without an extra round trip.
+        var lowStock = await _context.Products.AsNoTracking()
+            .Where(p => p.TrackInventory && p.IsActive)
+            .Select(p => new
+            {
+                CurrentStock = p.Stocks.Sum(s => (int?)s.QuantityOnHand) ?? 0,
+                p.MinStockThreshold
+            })
+            .CountAsync(p => p.CurrentStock <= p.MinStockThreshold);
+
         return Ok(new
         {
             OrdersToday = ordersToday,
             PendingOrders = pending,
-            RecentOrders = recentOrders
+            RecentOrders = recentOrders,
+            LowStockCount = lowStock
         });
     }
 }

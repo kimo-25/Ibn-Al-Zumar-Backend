@@ -31,6 +31,10 @@ public class Product : BaseEntity
 
     public int QuantityPerCarton { get; set; } = 1;
 
+    // NEW: الحد الأدنى للمخزون قبل تفعيل تنبيه "نقص المخزون".
+    // لو الكمية الحالية <= هذه القيمة يظهر المنتج في GET /api/inventory/low-stock
+    public int MinStockThreshold { get; set; } = 5;
+
     public bool IsActive { get; set; } = true;
 
     public bool TrackInventory { get; set; } = true;

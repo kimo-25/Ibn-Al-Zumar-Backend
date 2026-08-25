@@ -1,5 +1,6 @@
 ﻿using IbnAlZumar.API.DTOs.Identity;
 using IbnAlZumar.API.Services.Identity;
+using IbnAlZumar.Persistence.Seed; // إضافة الـ namespace الخاص بـ DataSeeder
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,7 @@ public class RolesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = DataSeeder.PermissionCodes.RolesManage)]
     public async Task<IActionResult> GetRoles()
     {
         var result = await _userService.GetRolesAsync();
@@ -25,6 +27,7 @@ public class RolesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = DataSeeder.PermissionCodes.RolesManage)]
     public async Task<IActionResult> CreateRole([FromBody] CreateRoleDto dto)
     {
         var result = await _userService.CreateRoleAsync(dto);
@@ -32,6 +35,7 @@ public class RolesController : ControllerBase
     }
 
     [HttpGet("permissions")]
+    [Authorize(Policy = DataSeeder.PermissionCodes.PermissionsManage)]
     public async Task<IActionResult> GetPermissions()
     {
         var result = await _userService.GetAllAvailablePermissionsAsync();

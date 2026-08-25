@@ -48,6 +48,14 @@ public class Customer : BaseEntity
 /// </summary>
 public class Order : BaseEntity
 {
+    /// <summary>
+    /// GUID generated client-side (offline) at creation time. Used as the idempotency
+    /// key for /api/orders/sync so a retried batch never creates duplicate orders.
+    /// Null for orders created normally (online, non-synced flow).
+    /// </summary>
+    [MaxLength(64)]
+    public string? ClientUuid { get; set; }
+
     [Required, MaxLength(50)]
     public string OrderNumber { get; set; } = string.Empty;
 
@@ -67,6 +75,8 @@ public class Order : BaseEntity
 
     /// <summary>Fulfilling warehouse. Defaults to Id = 1 in Phase 1; picked explicitly in Phase 2 POS.</summary>
     public int WarehouseId { get; set; }
+
+    [Required]
     public Warehouse Warehouse { get; set; } = null!;
 
     /// <summary>Null for online orders in Phase 1; set to the logged-in cashier for Phase 2 POS sales.</summary>
@@ -80,6 +90,17 @@ public class Order : BaseEntity
 
     [MaxLength(100)]
     public string? DeliveryGovernorate { get; set; }
+    public int? ShippingZoneId { get; set; }
+
+    public ShippingZone? ShippingZone { get; set; }
+
+    // ================= طلب منطقة شحن جديدة من العميل =================
+    public bool IsCustomZoneRequested { get; set; } = false;
+
+    [MaxLength(150)]
+    public string? CustomZoneName { get; set; }
+
+    public CustomZoneRequestStatus CustomZoneRequestStatus { get; set; } = CustomZoneRequestStatus.None;
 
     public decimal SubTotal { get; set; }
 
@@ -92,6 +113,10 @@ public class Order : BaseEntity
     [MaxLength(500)]
     public string? Notes { get; set; }
 
+    // تمت الإضافة هنا لسبب الإلغاء
+    [MaxLength(500)]
+    public string? CancellationReason { get; set; }
+
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }
@@ -99,9 +124,11 @@ public class Order : BaseEntity
 public class OrderItem : BaseEntity
 {
     public int OrderId { get; set; }
+    [Required]
     public Order Order { get; set; } = null!;
 
     public int ProductId { get; set; }
+    [Required]
     public Product Product { get; set; } = null!;
 
     public int Quantity { get; set; }
@@ -146,6 +173,7 @@ public class Payment : BaseEntity
 public class CustomerLedgerEntry : BaseEntity
 {
     public int CustomerId { get; set; }
+    [Required]
     public Customer Customer { get; set; } = null!;
 
     public LedgerTransactionType TransactionType { get; set; }

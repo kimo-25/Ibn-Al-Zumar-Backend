@@ -18,7 +18,8 @@ public enum OrderStatus
     Completed = 7,
     Cancelled = 8,
     Returned = 9,
-    Shipped = 10 // 👈 تم إضافتها بحجم معرّف مستقل لمنع أي تضارب
+    Shipped = 10,
+    CancellationRequested = 11 // تمت الإضافة لطلب الإلغاء
 }
 
 /// <summary>
@@ -33,6 +34,35 @@ public enum PaymentMethod
     InstaPay = 4,
     Fawry = 5,
     CustomerCredit = 6
+}
+
+/// <summary>
+/// Method used to pay a supplier. Kept separate from Sales PaymentMethod
+/// so Purchasing accounting can evolve independently (e.g. Cheque is supplier-specific).
+/// </summary>
+public enum SupplierPaymentMethod
+{
+    Cash = 1,
+    BankTransfer = 2,
+    Cheque = 3
+}
+
+/// <summary>
+/// Nature of a movement on a Supplier's statement of account.
+/// </summary>
+public enum SupplierLedgerTransactionType
+{
+    /// <summary>Supplier invoiced us (Purchase Order received) — increases what we owe.</summary>
+    PurchaseInvoice = 1,
+
+    /// <summary>We paid the supplier — decreases what we owe.</summary>
+    Payment = 2,
+
+    /// <summary>Manual correction to the balance (damaged goods, pricing error, etc.).</summary>
+    Adjustment = 3,
+
+    /// <summary>Supplier refunded us — decreases what we owe.</summary>
+    Refund = 4
 }
 
 public enum DiscountType
@@ -55,12 +85,16 @@ public enum PurchaseOrderStatus
 public enum InventoryTransactionType
 {
     PurchaseReceived = 1,
+    Purchase = 1,          // مرادف جديد متوافق مع الكود الجديد
     SaleDeducted = 2,
+    Sale = 2,              // مرادف جديد متوافق مع الكود الجديد
     TransferOut = 3,
     TransferIn = 4,
     AdjustmentIncrease = 5,
+    Adjustment = 5,        // مرادف جديد متوافق مع الكود الجديد
     AdjustmentDecrease = 6,
     CustomerReturn = 7,
+    Return = 7,            // مرادف جديد متوافق مع الكود الجديد
     SupplierReturn = 8
 }
 
@@ -96,4 +130,29 @@ public enum ReminderType
 {
     Quran = 1,
     Dhikr = 2
+}
+
+// ================= قسم الصيانة =================
+public enum MaintenanceStatus
+{
+    Pending = 1,          // قيد المراجعة
+    Priced = 2,           // تم التسعير (في انتظار موافقة العميل)
+    Approved = 3,         // العميل وافق
+    Rejected = 4,         // مرفوض
+    Completed = 5         // تم الانتهاء
+}
+
+public enum DeliveryMethod
+{
+    CustomerDropOff = 1,  // العميل هيجيب الجهاز المحل
+    CompanyPickup = 2     // الشركة هتبعت مندوب
+}
+
+// ================= تمت الإضافة لطلب مناطق الشحن الجديدة =================
+public enum CustomZoneRequestStatus
+{
+    None = 0,
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3
 }

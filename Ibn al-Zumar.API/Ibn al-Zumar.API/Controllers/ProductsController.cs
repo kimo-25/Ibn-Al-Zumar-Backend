@@ -17,6 +17,10 @@ namespace IbnAlZumar.API.Controllers
         private readonly IProductService _productService;
         private readonly IWebHostEnvironment _environment;
 
+        // Excel file constraints for bulk import
+        private static readonly string[] AllowedExcelExtensions = { ".xlsx", ".xls" };
+        private const long MaxExcelFileSizeBytes = 10 * 1024 * 1024; // 10 MB
+
         public ProductsController(IProductService productService, IWebHostEnvironment environment)
         {
             _productService = productService;
@@ -28,7 +32,6 @@ namespace IbnAlZumar.API.Controllers
         [ProducesResponseType(typeof(PagedResultDto<ProductResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll([FromQuery] ProductFilterDto filter)
         {
-            // Accept multiple possible query key names used by various frontends:
             if (string.IsNullOrWhiteSpace(filter.SearchTerm))
             {
                 var q = HttpContext.Request.Query;
@@ -65,6 +68,7 @@ namespace IbnAlZumar.API.Controllers
 
         [HttpPost]
         [Authorize(Policy = "Products.Create")]
+        [Consumes("multipart/form-data")] // 👈 تم التعديل لـ Swagger
         [ProducesResponseType(typeof(ProductResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromForm] CreateProductDto dto, IFormFile? imageFile)
@@ -76,25 +80,9 @@ namespace IbnAlZumar.API.Controllers
             {
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "products");
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
-
-                    // استخدام الـ SKU كاسم للصورة
-                    var extension = Path.GetExtension(imageFile.FileName);
-                    var fileName = $"{dto.SKU}{extension}";
-                    var filePath = Path.Combine(uploadsFolder, fileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await imageFile.CopyToAsync(fileStream);
-                    }
-
-                    dto.ImageUrl = $"/uploads/products/{fileName}";
+                    dto.ImageUrl = await SaveProductImageAsync(imageFile, dto.SKU);
                 }
-                else
+                else if (string.IsNullOrWhiteSpace(dto.ImageUrl))
                 {
                     dto.ImageUrl = "/uploads/products/default.png";
                 }
@@ -110,6 +98,7 @@ namespace IbnAlZumar.API.Controllers
 
         [HttpPut("{id:int}")]
         [Authorize]
+        [Consumes("multipart/form-data")] // 👈 تم التعديل لـ Swagger
         [ProducesResponseType(typeof(ProductResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -122,23 +111,7 @@ namespace IbnAlZumar.API.Controllers
             {
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "products");
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
-
-                    // استخدام الـ SKU للـ Update لضمان استبدال الصورة القديمة
-                    var extension = Path.GetExtension(imageFile.FileName);
-                    var fileName = $"{dto.SKU}{extension}";
-                    var filePath = Path.Combine(uploadsFolder, fileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await imageFile.CopyToAsync(fileStream);
-                    }
-
-                    dto.ImageUrl = $"/uploads/products/{fileName}";
+                    dto.ImageUrl = await SaveProductImageAsync(imageFile, dto.SKU);
                 }
 
                 var product = await _productService.UpdateAsync(id, dto);
@@ -169,6 +142,69 @@ namespace IbnAlZumar.API.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
+        }
+
+        // ==========================================
+        // Bulk Import Products via Excel (Admin / Moderator)
+        // ==========================================
+        // NOTE ON AUTHORIZATION:
+        // Your RBAC system is permission-policy based (see DataSeeder / PermissionPolicyProvider),
+        // not raw ASP.NET role-based. Re-using "Products.Create" keeps this endpoint consistent
+        // with the single-create endpoint above and works for whichever roles (Admin, Moderator, ...)
+        // your seeder has granted that permission to.
+        // If you want finer control (e.g. only Admin can bulk-import, but Moderator cannot),
+        // add a dedicated "Products.BulkImport" permission in your DataSeeder and swap the
+        // policy name below.
+        [HttpPost("bulk-import")]
+        [Authorize(Policy = "Products.Create")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(BulkImportResultDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> BulkImport(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "لم يتم إرفاق أي ملف. من فضلك اختر ملف اكسل صالح." });
+
+            var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+            if (string.IsNullOrEmpty(extension) || !AllowedExcelExtensions.Contains(extension))
+                return BadRequest(new { message = "صيغة الملف غير مدعومة. الرجاء رفع ملف بصيغة .xlsx أو .xls فقط." });
+
+            if (file.Length > MaxExcelFileSizeBytes)
+                return BadRequest(new { message = "حجم الملف كبير جداً. الحد الأقصى المسموح به هو 10 ميجابايت." });
+
+            try
+            {
+                await using var stream = file.OpenReadStream();
+                var result = await _productService.BulkImportAsync(stream);
+                return Ok(result);
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        private async Task<string> SaveProductImageAsync(IFormFile file, string sku)
+        {
+            var rootPath = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var uploadsFolder = Path.Combine(rootPath, "uploads", "products");
+
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var cleanSku = string.Concat(sku.Split(Path.GetInvalidFileNameChars()));
+            var extension = Path.GetExtension(file.FileName);
+            var fileName = $"{cleanSku}_{Guid.NewGuid().ToString("N")[..6]}{extension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return $"/uploads/products/{fileName}";
         }
     }
 }

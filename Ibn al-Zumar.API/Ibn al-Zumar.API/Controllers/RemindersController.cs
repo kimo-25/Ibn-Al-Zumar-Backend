@@ -28,7 +28,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpGet("admin/all")]
-        [Authorize(Roles = "Owner, Moderator")]
+        [Authorize(Roles = "Admin, Moderator, Owner, STORE_OWNER, SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var reminders = await _reminderService.GetAllRemindersAsync(includeInactive: true);
@@ -36,7 +36,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPost("admin")]
-        [Authorize(Roles = "Owner, Moderator")]
+        [Authorize(Roles = "Admin, Moderator, Owner, STORE_OWNER, SuperAdmin")]
         public async Task<IActionResult> Create([FromBody] CreateReminderDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -46,7 +46,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPut("admin/{id:int}")]
-        [Authorize(Roles = "Owner, Moderator")]
+        [Authorize(Roles = "Admin, Moderator, Owner, STORE_OWNER, SuperAdmin")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateReminderDto dto)
         {
             var result = await _reminderService.UpdateReminderAsync(id, dto);
@@ -55,7 +55,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPatch("admin/{id:int}/toggle-status")]
-        [Authorize(Roles = "Owner, Moderator")]
+        [Authorize(Roles = "Admin, Moderator, Owner, STORE_OWNER, SuperAdmin")]
         public async Task<IActionResult> ToggleStatus(int id)
         {
             var result = await _reminderService.ToggleStatusAsync(id);
@@ -64,7 +64,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpDelete("admin/{id:int}")]
-        [Authorize(Roles = "Owner, Moderator")]
+        [Authorize(Roles = "Admin, Moderator, Owner, STORE_OWNER, SuperAdmin")]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _reminderService.SoftDeleteAsync(id);

@@ -1,4 +1,6 @@
-﻿namespace IbnAlZumar.API.DTOs.Customers;
+﻿using IbnAlZumar.API.DTOs.Sales;
+
+namespace IbnAlZumar.API.DTOs.Customers;
 
 public class CustomerResponseDto
 {
@@ -12,6 +14,7 @@ public class CustomerResponseDto
     public decimal CreditLimit { get; set; }
     public decimal CurrentBalance { get; set; }
     public DateTime CreatedAt { get; set; }
+    public List<CustomerOrderDto> Orders { get; set; } = new();
 }
 
 public class CreateCustomerDto

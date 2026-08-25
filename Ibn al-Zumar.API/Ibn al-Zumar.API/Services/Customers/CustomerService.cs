@@ -1,6 +1,5 @@
 ﻿using IbnAlZumar.API.Common.Exceptions;
 using IbnAlZumar.API.DTOs.Catalog;
-using IbnAlZumar.API.DTOs.Customers;
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.Domain.Entities.Sales;
 using IbnAlZumar.Domain.Enums;
@@ -18,7 +17,7 @@ public class CustomerService : ICustomerService
         _context = context;
     }
 
-    private static readonly Expression<Func<Customer, CustomerResponseDto>> ProjectToDto = c => new CustomerResponseDto
+    private static readonly Expression<Func<Customer, DTOs.Customers.CustomerResponseDto>> ProjectToDto = c => new DTOs.Customers.CustomerResponseDto
     {
         Id = c.Id,
         FullName = c.FullName,
@@ -32,7 +31,7 @@ public class CustomerService : ICustomerService
         CreatedAt = c.CreatedAt
     };
 
-    public async Task<PagedResultDto<CustomerResponseDto>> GetAllAsync(CustomerFilterDto filter)
+    public async Task<PagedResultDto<DTOs.Customers.CustomerResponseDto>> GetAllAsync(DTOs.Customers.CustomerFilterDto filter)
     {
         var query = _context.Customers.AsNoTracking().AsQueryable();
 
@@ -55,7 +54,7 @@ public class CustomerService : ICustomerService
             .Select(ProjectToDto)
             .ToListAsync();
 
-        return new PagedResultDto<CustomerResponseDto>
+        return new PagedResultDto<DTOs.Customers.CustomerResponseDto>
         {
             Items = items,
             TotalCount = totalCount,
@@ -64,12 +63,42 @@ public class CustomerService : ICustomerService
         };
     }
 
-    public async Task<CustomerResponseDto> GetByIdAsync(int id)
+    public async Task<DTOs.Customers.CustomerResponseDto> GetByIdAsync(int id)
     {
         var customer = await _context.Customers
             .AsNoTracking()
             .Where(c => c.Id == id)
-            .Select(ProjectToDto)
+            .Include(c => c.Orders)
+            .Select(c => new DTOs.Customers.CustomerResponseDto
+            {
+                Id = c.Id,
+                FullName = c.FullName,
+                Phone = c.Phone,
+                Email = c.Email,
+                Address = c.Address,
+                Governorate = c.Governorate,
+                IsRegistered = c.IsRegistered,
+                CreditLimit = c.CreditLimit,
+                CurrentBalance = c.CurrentBalance,
+                CreatedAt = c.CreatedAt,
+                Orders = c.Orders.Select(o => new DTOs.Sales.CustomerOrderDto
+                {
+                    Id = o.Id,
+                    OrderNumber = o.OrderNumber,
+                    Status = o.Status.ToString(),
+                    CustomerName = c.FullName,
+                    CustomerPhone = c.Phone ?? string.Empty,
+                    CustomerEmail = c.Email,
+                    ShippingAddress = o.ShippingAddress,
+                    ShippingCost = 0, // تم تعديلها لتجنب الخطأ إذا لم تكن موجودة في الـ Entity
+                    ShippingFee = 0, // استخدام الحقل المتاح في الـ Order
+                    Notes = o.Notes,
+                    SubTotal = o.SubTotal,
+                    DiscountAmount = o.DiscountAmount,
+                    TotalAmount = o.TotalAmount,
+                    CreatedAt = o.CreatedAt
+                }).ToList()
+            })
             .FirstOrDefaultAsync();
 
         if (customer is null)
@@ -78,7 +107,7 @@ public class CustomerService : ICustomerService
         return customer;
     }
 
-    public async Task<CustomerResponseDto> CreateAsync(CreateCustomerDto dto)
+    public async Task<DTOs.Customers.CustomerResponseDto> CreateAsync(DTOs.Customers.CreateCustomerDto dto)
     {
         await EnsurePhoneIsUniqueAsync(dto.Phone);
 
@@ -100,7 +129,7 @@ public class CustomerService : ICustomerService
         return await GetByIdAsync(customer.Id);
     }
 
-    public async Task<CustomerResponseDto> UpdateAsync(int id, UpdateSalesCustomerDto dto)
+    public async Task<DTOs.Customers.CustomerResponseDto> UpdateAsync(int id, DTOs.Customers.UpdateSalesCustomerDto dto)
     {
         var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
         if (customer is null)
@@ -133,7 +162,7 @@ public class CustomerService : ICustomerService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<CustomerResponseDto> AdjustDebtAsync(int id, AdjustCustomerDebtDto dto)
+    public async Task<DTOs.Customers.CustomerResponseDto> AdjustDebtAsync(int id, DTOs.Customers.AdjustCustomerDebtDto dto)
     {
         if (dto.Amount == 0)
             throw new BadRequestException("قيمة التسوية يجب ألا تساوي صفر");

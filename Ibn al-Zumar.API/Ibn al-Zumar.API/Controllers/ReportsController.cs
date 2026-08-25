@@ -21,7 +21,7 @@ public class ReportsController : ControllerBase
     [HttpGet("sales")]
     public async Task<IActionResult> GetSalesReport([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
-        var query = _context.Orders.AsNoTracking().AsQueryable();
+        var query = _context.Orders.AsNoTracking().Where(o => !o.IsDeleted);
 
         if (startDate.HasValue)
             query = query.Where(o => o.CreatedAt >= startDate.Value);
@@ -31,11 +31,13 @@ public class ReportsController : ControllerBase
 
         var totalOrders = await query.CountAsync();
         var totalRevenue = await query.SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+        var averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
         return Ok(new
         {
             TotalOrders = totalOrders,
             TotalRevenue = totalRevenue,
+            AverageOrderValue = Math.Round(averageOrderValue, 2),
             StartDate = startDate ?? DateTime.MinValue,
             EndDate = endDate ?? DateTime.UtcNow
         });
@@ -45,30 +47,66 @@ public class ReportsController : ControllerBase
     [HttpGet("inventory-status")]
     public async Task<IActionResult> GetInventoryStatusReport()
     {
-        var totalProducts = await _context.Products.CountAsync();
+        var totalProducts = await _context.Products.AsNoTracking().CountAsync(p => p.IsActive);
 
-        var lowStockProducts = await _context.Products
+        var productsWithStock = await _context.Products
             .AsNoTracking()
-            .Where(p => p.QuantityPerCarton <= 5) // لو اسم الخاصية عندك Quantity أو Stock جرب استبدالها
+            .Where(p => p.IsActive)
             .Select(p => new
             {
                 p.Id,
                 p.Name,
-                Stock = p.QuantityPerCarton,
-                Price = p.CurrentCostPrice // لو اسم الخاصية عندك Price أو SellingPrice جرب استبدالها
+                p.NameAr,
+                p.SKU,
+                TotalStock = p.Stocks.Sum(s => (int?)s.QuantityOnHand) ?? 0,
+                MinStock = p.MinStockThreshold,
+                CostPrice = p.CurrentCostPrice
             })
             .ToListAsync();
 
-        var totalInventoryValue = await _context.Products
-            .AsNoTracking()
-            .SumAsync(p => p.QuantityPerCarton * p.CurrentCostPrice);
+        var lowStockItems = productsWithStock
+            .Where(p => p.TotalStock > 0 && p.TotalStock <= p.MinStock)
+            .ToList();
+
+        var outOfStockItems = productsWithStock
+            .Where(p => p.TotalStock == 0)
+            .ToList();
+
+        var totalInventoryValue = productsWithStock
+            .Sum(p => (decimal)p.TotalStock * p.CostPrice);
 
         return Ok(new
         {
             TotalProducts = totalProducts,
             TotalInventoryValue = totalInventoryValue,
-            LowStockCount = lowStockProducts.Count,
-            LowStockItems = lowStockProducts
+            LowStockCount = lowStockItems.Count,
+            OutOfStockCount = outOfStockItems.Count,
+            LowStockItems = lowStockItems
+        });
+    }
+
+    // تقرير التقييم المالي والأرباح
+    [HttpGet("financial")]
+    public async Task<IActionResult> GetFinancialReport([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    {
+        var query = _context.Orders.AsNoTracking().Where(o => !o.IsDeleted);
+
+        if (startDate.HasValue)
+            query = query.Where(o => o.CreatedAt >= startDate.Value);
+
+        if (endDate.HasValue)
+            query = query.Where(o => o.CreatedAt <= endDate.Value);
+
+        var totalRevenue = await query.SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+
+        // حساب الأرباح التقديرية بناءً على إجمالي المبيعات وقيمة المخزون
+        var estimatedNetProfit = totalRevenue * 0.25m; // نسبة تشغيلية كمثال
+
+        return Ok(new
+        {
+            TotalRevenue = totalRevenue,
+            EstimatedNetProfit = estimatedNetProfit,
+            TaxEstimated = totalRevenue * 0.14m
         });
     }
 }

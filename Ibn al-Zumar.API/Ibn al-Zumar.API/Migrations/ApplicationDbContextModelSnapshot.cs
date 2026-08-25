@@ -22,6 +22,94 @@ namespace Ibn_alZumar.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Attendance.AttendanceLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CheckInTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("WorkedHours")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CheckInTime");
+
+                    b.ToTable("AttendanceLogs");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Attendance.PayrollRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("TotalHours")
+                        .HasColumnType("float");
+
+                    b.Property<decimal>("TotalSalary")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PayrollRecords");
+                });
+
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.Brand", b =>
                 {
                     b.Property<int>("Id")
@@ -141,6 +229,9 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<int>("MinStockThreshold")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -462,15 +553,32 @@ namespace Ibn_alZumar.API.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<string>("EmailVerificationCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("EmailVerificationExpiry")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<decimal>("HourlyRate")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEmailVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPhoneVerified")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginAt")
@@ -481,6 +589,35 @@ namespace Ibn_alZumar.API.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
+                    b.Property<string>("PasswordResetCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("PasswordResetExpiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PendingEmail")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("PendingEmailCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("PendingEmailExpiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PendingPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PendingPhoneCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("PendingPhoneExpiry")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -488,6 +625,9 @@ namespace Ibn_alZumar.API.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("VoiceEmbedding")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -759,6 +899,68 @@ namespace Ibn_alZumar.API.Migrations
                         });
                 });
 
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DeliveryMethod")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("EstimatedPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MaintenanceReportUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ProblemDescription")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ScheduledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MaintenanceRequests");
+                });
+
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.PurchaseOrder", b =>
                 {
                     b.Property<int>("Id")
@@ -916,6 +1118,112 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Suppliers", (string)null);
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.SupplierLedgerEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("RelatedPaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RelatedPurchaseOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("RunningBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TransactionType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RelatedPaymentId");
+
+                    b.HasIndex("RelatedPurchaseOrderId");
+
+                    b.HasIndex("SupplierId", "TransactionDate");
+
+                    b.ToTable("SupplierLedgerEntries");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.SupplierPayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PurchaseOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("PurchaseOrderId");
+
+                    b.HasIndex("SupplierId", "PaymentDate");
+
+                    b.ToTable("SupplierPayments");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Reminders.Reminder", b =>
@@ -1080,11 +1388,26 @@ namespace Ibn_alZumar.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int?>("CashierUserId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ClientUuid")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomZoneName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("CustomZoneRequestStatus")
+                        .HasColumnType("int");
 
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
@@ -1114,6 +1437,9 @@ namespace Ibn_alZumar.API.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<bool>("IsCustomZoneRequested")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1137,6 +1463,9 @@ namespace Ibn_alZumar.API.Migrations
                     b.Property<string>("ShippingAddress")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
+
+                    b.Property<int?>("ShippingZoneId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -1166,12 +1495,18 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("CashierUserId");
 
+                    b.HasIndex("ClientUuid")
+                        .IsUnique()
+                        .HasFilter("[ClientUuid] IS NOT NULL");
+
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("OrderDate");
 
                     b.HasIndex("OrderNumber")
                         .IsUnique();
+
+                    b.HasIndex("ShippingZoneId");
 
                     b.HasIndex("WarehouseId");
 
@@ -1295,6 +1630,9 @@ namespace Ibn_alZumar.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("EstimatedDays")
                         .HasColumnType("int");
 
@@ -1310,14 +1648,41 @@ namespace Ibn_alZumar.API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("ShippingCost")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("ShippingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.ToTable("shipping_zones", (string)null);
+                    b.ToTable("ShippingZones");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Attendance.AttendanceLog", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Identity.User", "User")
+                        .WithMany("AttendanceLogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Attendance.PayrollRecord", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Identity.User", "User")
+                        .WithMany("PayrollRecords")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.Category", b =>
@@ -1523,6 +1888,21 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("StockTransfer");
                 });
 
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Sales.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Identity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.PurchaseOrder", b =>
                 {
                     b.HasOne("IbnAlZumar.Domain.Entities.Purchasing.Supplier", "Supplier")
@@ -1559,6 +1939,56 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("PurchaseOrder");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.SupplierLedgerEntry", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Purchasing.SupplierPayment", "RelatedPayment")
+                        .WithMany("LedgerEntries")
+                        .HasForeignKey("RelatedPaymentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Purchasing.PurchaseOrder", "RelatedPurchaseOrder")
+                        .WithMany()
+                        .HasForeignKey("RelatedPurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Purchasing.Supplier", "Supplier")
+                        .WithMany("LedgerEntries")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RelatedPayment");
+
+                    b.Navigation("RelatedPurchaseOrder");
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.SupplierPayment", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Purchasing.PurchaseOrder", "PurchaseOrder")
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Purchasing.Supplier", "Supplier")
+                        .WithMany("Payments")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("PurchaseOrder");
+
+                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.CustomerLedgerEntry", b =>
@@ -1598,6 +2028,10 @@ namespace Ibn_alZumar.API.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("IbnAlZumar.Domain.Entities.Sales.ShippingZone", "ShippingZone")
+                        .WithMany()
+                        .HasForeignKey("ShippingZoneId");
+
                     b.HasOne("IbnAlZumar.Domain.Entities.Inventory.Warehouse", "Warehouse")
                         .WithMany()
                         .HasForeignKey("WarehouseId")
@@ -1607,6 +2041,8 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("CashierUser");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("ShippingZone");
 
                     b.Navigation("Warehouse");
                 });
@@ -1702,6 +2138,10 @@ namespace Ibn_alZumar.API.Migrations
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.User", b =>
                 {
+                    b.Navigation("AttendanceLogs");
+
+                    b.Navigation("PayrollRecords");
+
                     b.Navigation("UserPermissions");
 
                     b.Navigation("UserRoles");
@@ -1728,7 +2168,16 @@ namespace Ibn_alZumar.API.Migrations
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.Supplier", b =>
                 {
+                    b.Navigation("LedgerEntries");
+
+                    b.Navigation("Payments");
+
                     b.Navigation("PurchaseOrders");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.SupplierPayment", b =>
+                {
+                    b.Navigation("LedgerEntries");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.Customer", b =>

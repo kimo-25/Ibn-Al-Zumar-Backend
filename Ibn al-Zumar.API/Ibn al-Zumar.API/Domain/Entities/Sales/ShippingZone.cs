@@ -9,5 +9,8 @@
         public decimal ShippingFee { get; set; } // رسوم الشحن الإضافية / الفعلية
         public int EstimatedDays { get; set; } = 1; // عدد الأيام المتوقعة للتوصيل
         public bool IsActive { get; set; } = true; // حالة التفعيل
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
     }
 }

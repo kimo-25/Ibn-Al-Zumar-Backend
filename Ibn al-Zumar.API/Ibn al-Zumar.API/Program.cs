@@ -1,29 +1,38 @@
-using System.Text;
 using IbnAlZumar.Api.Authorization;
 using IbnAlZumar.Api.Common.Settings;
 using IbnAlZumar.Api.Middleware;
 using IbnAlZumar.Api.Services.Auth;
 using IbnAlZumar.Api.Services.Catalog;
+using IbnAlZumar.Api.Services.Email;
+using IbnAlZumar.API.Ai;
+using IbnAlZumar.API.Ai.Files;
+using IbnAlZumar.API.Ai.Tools;
 using IbnAlZumar.API.Persistence;
+using IbnAlZumar.API.Services.Ai;
+using IbnAlZumar.API.Services.Attendance;
 using IbnAlZumar.API.Services.Catalog;
 using IbnAlZumar.API.Services.Customers;
 using IbnAlZumar.API.Services.Identity;
 using IbnAlZumar.API.Services.Inventory;
 using IbnAlZumar.API.Services.Purchasing;
 using IbnAlZumar.API.Services.Reminders;
+using IbnAlZumar.API.Services.Sales;
 using IbnAlZumar.Domain.Entities.Identity;
 using IbnAlZumar.Persistence;
 using IbnAlZumar.Persistence.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Services.Sales;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +52,13 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
     ?? throw new InvalidOperationException("Missing 'Jwt' configuration section in appsettings.json.");
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+
+// Brevo Email Settings
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("Brevo"));
+
+// Gemini AI Settings
+builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection(GeminiSettings.SectionName));
 
 // ---------------------------------------------------------------------------
 // DbContext (SQL Server Configuration for Azure / Local)
@@ -72,12 +88,52 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
-builder.Services.AddScoped<IPurchasingService, PurchasingService>();
+
+builder.Services.AddScoped<IbnAlZumar.API.Services.Purchasing.IPurchasingService, IbnAlZumar.API.Services.Purchasing.PurchasingService>();
+
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
 // Reminders Service Registration
 builder.Services.AddScoped<IReminderService, ReminderService>();
+
+// Email Service Registration
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+// ---------------------------------------------------------------------------
+// AI Assistant (Gemini) Integration & Multimodal Processing
+// ---------------------------------------------------------------------------
+builder.Services.AddScoped<IAiFileProcessingService, AiFileProcessingService>();
+
+builder.Services.AddHttpClient<IAiAssistantService, AiAssistantService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// Register AI Tools & Registry (Basic + Catalog + Excel Tools)
+builder.Services.AddSingleton<IAiTool, GetPendingOrdersTool>();
+builder.Services.AddSingleton<IAiTool, GetOrderDetailsTool>();
+builder.Services.AddSingleton<IAiTool, GetLowStockProductsTool>();
+builder.Services.AddSingleton<IAiTool, GetSalesSummaryTool>();
+builder.Services.AddSingleton<IAiTool, UpdateProductPriceTool>();
+
+// New Catalog & Excel Tools
+builder.Services.AddSingleton<IAiTool, GetCategoriesTool>();
+builder.Services.AddSingleton<IAiTool, CreateCategoryTool>();
+builder.Services.AddSingleton<IAiTool, CreateProductTool>();
+builder.Services.AddSingleton<IAiTool, BulkImportProductsTool>();
+builder.Services.AddSingleton<IAiTool, GenerateProductsExcelTool>();
+
+// AI Tool Registry (Resolved correctly via namespace)
+builder.Services.AddSingleton<AiToolRegistry>();
+
+// ---------------------------------------------------------------------------
+// Voice Biometrics & Commands (Local C# Processing — No HuggingFace HTTP)
+// ---------------------------------------------------------------------------
+builder.Services.AddScoped<IVoiceVerificationService, VoiceVerificationService>();
+builder.Services.AddScoped<IVoiceCommandService, VoiceCommandService>();
+
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 // ---------------------------------------------------------------------------
 // Authentication (JWT Bearer)
@@ -123,7 +179,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicyName, policy =>
     {
-        policy.SetIsOriginAllowed(_ => true)
+        policy.WithOrigins("https://kimo-25.github.io")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -174,6 +230,17 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// ---------------------------------------------------------------------------
+// Auto-Apply Migrations & Seed database
+// ---------------------------------------------------------------------------
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
+await app.SeedDatabaseAsync();
+
 // ---------------------------------------------------
 // Middleware pipeline
 // ---------------------------------------------------
@@ -191,36 +258,40 @@ if (!app.Environment.IsDevelopment())
 }
 
 // ---------------------------------------------------------------------------
-// Custom Static Files Configuration (يدعم .webp والـ Static Files بالمسار الصحيح)
+// Custom Static Files Configuration
 // ---------------------------------------------------------------------------
 var contentTypeProvider = new FileExtensionContentTypeProvider();
 contentTypeProvider.Mappings[".webp"] = "image/webp";
 
+// 1. القراءة من wwwroot
 app.UseStaticFiles(new StaticFileOptions
 {
     ContentTypeProvider = contentTypeProvider,
     ServeUnknownFileTypes = true
 });
 
+// 2. القراءة المباشرة من مجلد uploads الخارجي
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads",
+    ContentTypeProvider = contentTypeProvider,
+    ServeUnknownFileTypes = true
+});
+
 app.UseRouting();
 
-// تفعيل سياسة الـ CORS بالاسم الصحيح
 app.UseCors(CorsPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// ---------------------------------------------------------------------------
-// Auto-Apply Migrations & Seed database
-// ---------------------------------------------------------------------------
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
-
-await app.SeedDatabaseAsync();
 
 app.Run();
