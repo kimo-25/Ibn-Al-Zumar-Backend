@@ -155,12 +155,15 @@ namespace IbnAlZumar.API.Ai
                         }
                     }
 
+                    // NEW (v1beta+): Preserve thoughtSignature from the model's function call
+                    // and include it in the function response to satisfy newer Gemini models
                     responseParts.Add(new GeminiPart
                     {
                         FunctionResponse = new GeminiFunctionResponse
                         {
                             Name = call.Name,
-                            Response = toolResult
+                            Response = toolResult,
+                            ThoughtSignature = call.ThoughtSignature
                         }
                     });
                 }

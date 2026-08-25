@@ -101,6 +101,14 @@ namespace IbnAlZumar.API.Ai.Models
 
         [JsonPropertyName("args")]
         public JsonElement Args { get; set; }
+
+        /// <summary>
+        /// NEW (v1beta+): Required for multi-turn function calling in newer Gemini models.
+        /// Preserves the thought_signature from the model's function call and sends it back
+        /// when continuing the conversation to avoid BadRequest errors.
+        /// </summary>
+        [JsonPropertyName("thoughtSignature")]
+        public string? ThoughtSignature { get; set; }
     }
 
     public class GeminiFunctionResponse
@@ -110,6 +118,13 @@ namespace IbnAlZumar.API.Ai.Models
 
         [JsonPropertyName("response")]
         public object Response { get; set; } = new { };
+
+        /// <summary>
+        /// NEW (v1beta+): Required for multi-turn function calling in newer Gemini models.
+        /// Must match the thoughtSignature from the corresponding functionCall.
+        /// </summary>
+        [JsonPropertyName("thoughtSignature")]
+        public string? ThoughtSignature { get; set; }
     }
 
     public class GeminiTool
