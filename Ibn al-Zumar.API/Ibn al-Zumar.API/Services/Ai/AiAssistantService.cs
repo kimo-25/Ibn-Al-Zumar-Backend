@@ -261,23 +261,41 @@ namespace IbnAlZumar.API.Ai
                 _settings.BaseUrl,
                 _settings.Model);
 
-            var url = $"{_settings.BaseUrl.TrimEnd('/')}/models/{_settings.Model}:generateContent?key={_settings.ApiKey}";
+            // بناء الـ URL بشكل صحيح: نزيل أي تكرار لكلمة models/ ونضمن أن الصيغة صحيحة
+            var baseUrl = _settings.BaseUrl.TrimEnd('/');
+            var model = _settings.Model.Trim();
+            
+            // التأكد من عدم وجود تكرار لـ models/ في اسم الموديل
+            if (model.StartsWith("models/", StringComparison.OrdinalIgnoreCase))
+            {
+                model = model.Substring("models/".Length);
+            }
+            
+            var url = $"{baseUrl}/models/{model}:generateContent?key={_settings.ApiKey}";
 
-            _logger.LogInformation("Gemini URL: {Url}", url);
+            _logger.LogInformation("Gemini Final URL: {Url}", url);
 
-            // إدراج تسجيل طلب الـ JSON بالكامل لعرض التفاصيل المتبادلة مع Gemini في الـ Logs
-            _logger.LogInformation(
-                "Gemini Request: {Request}",
-                JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true }));
+            // تسجيل طلب الـ JSON بالكامل لعرض التفاصيل المتبادلة مع Gemini في الـ Logs
+            var requestJson = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
+            _logger.LogInformation("Gemini Request Body: {Request}", requestJson);
 
             using var httpResponse = await _httpClient.PostAsJsonAsync(url, request, JsonOptions, ct);
 
             if (!httpResponse.IsSuccessStatusCode)
             {
-                var body = await httpResponse.Content.ReadAsStringAsync(ct);
-                _logger.LogError("Gemini API error {StatusCode}: {Body}", httpResponse.StatusCode, body);
-                throw new InvalidOperationException("تعذر الاتصال بخدمة المساعد الذكي حالياً.");
+                var errorBody = await httpResponse.Content.ReadAsStringAsync(ct);
+                _logger.LogError(
+                    "Gemini API Error - StatusCode: {StatusCode}, URL: {Url}, RequestBody: {Request}, ResponseBody: {ErrorBody}",
+                    httpResponse.StatusCode,
+                    url,
+                    requestJson,
+                    errorBody);
+                    
+                throw new InvalidOperationException($"تعذر الاتصال بخدمة المساعد الذكي حالياً (Status: {httpResponse.StatusCode}).");
             }
+
+            var responseBody = await httpResponse.Content.ReadAsStringAsync(ct);
+            _logger.LogInformation("Gemini Response Body: {Response}", responseBody);
 
             var parsed = await httpResponse.Content.ReadFromJsonAsync<GeminiResponse>(JsonOptions, ct);
             return parsed ?? new GeminiResponse();
