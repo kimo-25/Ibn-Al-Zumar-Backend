@@ -37,9 +37,11 @@
 
     public class ParsedVoiceCommandDto
     {
-        /// <summary>CreateInvoice | AddProduct | Unknown</summary>
+        /// <summary>CreateInvoice | AddProduct | UpdateProductPrice | Unknown</summary>
         public string Intent { get; set; } = "Unknown";
 
+        public string? ProductIdentifier { get; set; }
+        public decimal? NewPrice { get; set; }
         public string? CustomerName { get; set; }
 
         public List<ParsedVoiceItemDto> Items { get; set; } = new();

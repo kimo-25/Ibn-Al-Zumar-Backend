@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Globalization;
 using IbnAlZumar.API.DTOs.Ai;
 using IbnAlZumar.API.DTOs.Catalog;
 using IbnAlZumar.API.DTOs.Sales;
@@ -83,6 +84,7 @@ namespace IbnAlZumar.API.Services.Ai
             {
                 "CreateInvoice" => await HandleCreateInvoiceAsync(parsed, cancellationToken),
                 "AddProduct" => await HandleAddProductAsync(parsed, cancellationToken),
+                "UpdateProductPrice" => await HandleUpdateProductPriceAsync(parsed, cancellationToken),
                 _ => new VoiceCommandResultDto
                 {
                     Success = false,
@@ -103,6 +105,15 @@ namespace IbnAlZumar.API.Services.Ai
             var result = new ParsedVoiceCommandDto { RawText = rawText };
 
             // 1) تحديد نوع العملية
+            var priceChange = Regex.Match(text, @"(?:عدل|عدّل|غير|غيّر|تعديل|تغيير)\s+(?:سعر\s+)?(?:المنتج\s+)?(?<product>.+?)\s+(?:إلى|الى|ليكون|يكون|بسعر|بـ)\s*(?<price>[0-9٠-٩]+(?:[.,][0-9٠-٩]+)?)", RegexOptions.IgnoreCase);
+            if (priceChange.Success && TryParseVoiceDecimal(priceChange.Groups["price"].Value, out var newPrice))
+            {
+                result.Intent = "UpdateProductPrice";
+                result.ProductIdentifier = priceChange.Groups["product"].Value.Trim();
+                result.NewPrice = newPrice;
+                return result;
+            }
+
             if (Regex.IsMatch(text, @"فاتورة|بيع|اطلب|طلب"))
             {
                 result.Intent = "CreateInvoice";
@@ -178,6 +189,41 @@ namespace IbnAlZumar.API.Services.Ai
             token = token.Trim();
             if (int.TryParse(token, out var n)) return n;
             return ArabicNumberWords.TryGetValue(token, out var val) ? val : 0;
+        }
+
+        private static bool TryParseVoiceDecimal(string token, out decimal value)
+        {
+            var normalized = token.Trim().Replace('،', '.').Replace(',', '.');
+            normalized = normalized.Replace('٠', '0').Replace('١', '1').Replace('٢', '2').Replace('٣', '3').Replace('٤', '4')
+                .Replace('٥', '5').Replace('٦', '6').Replace('٧', '7').Replace('٨', '8').Replace('٩', '9');
+            return decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out value);
+        }
+
+        private async Task<VoiceCommandResultDto> HandleUpdateProductPriceAsync(ParsedVoiceCommandDto parsed, CancellationToken ct)
+        {
+            if (!parsed.NewPrice.HasValue || string.IsNullOrWhiteSpace(parsed.ProductIdentifier))
+                return new VoiceCommandResultDto { Success = false, Action = "UpdateProductPrice", Message = "يرجى تحديد اسم المنتج أو SKU والسعر الجديد.", ParsedCommand = parsed };
+
+            var identifier = parsed.ProductIdentifier.Trim();
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.SKU == identifier || p.Name == identifier || p.NameAr == identifier, ct);
+            if (product == null)
+            {
+                var match = await FindBestProductMatchAsync(identifier, ct);
+                if (match.HasValue) product = await _context.Products.FirstOrDefaultAsync(p => p.Id == match.Value.Id, ct);
+            }
+            if (product == null)
+                return new VoiceCommandResultDto { Success = false, Action = "UpdateProductPrice", Message = $"لم أتمكن من العثور على المنتج \"{identifier}\".", ParsedCommand = parsed };
+
+            var updated = await _productService.UpdatePriceAsync(product.Id, parsed.NewPrice.Value);
+            parsed.ProductIdentifier = updated.NameAr ?? updated.Name;
+            return new VoiceCommandResultDto
+            {
+                Success = true,
+                Action = "UpdateProductPrice",
+                Message = $"تم تحديث سعر المنتج \"{parsed.ProductIdentifier}\" إلى {updated.SellingPrice:0.##} بنجاح.",
+                Data = new { productId = updated.Id, fullName = updated.NameAr ?? updated.Name, newPrice = updated.SellingPrice },
+                ParsedCommand = parsed
+            };
         }
 
         // =========================================================

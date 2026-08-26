@@ -8,6 +8,7 @@ namespace IbnAlZumar.API.Services.Catalog
         Task<ProductResponseDto> GetByIdAsync(int id);
         Task<ProductResponseDto> CreateAsync(CreateProductDto dto);
         Task<ProductResponseDto> UpdateAsync(int id, UpdateProductDto dto);
+        Task<ProductResponseDto> UpdatePriceAsync(int id, decimal newPrice);
         Task DeleteAsync(int id);
 
         // 👈 إضافة تعريف دالة الإدخال المجمع

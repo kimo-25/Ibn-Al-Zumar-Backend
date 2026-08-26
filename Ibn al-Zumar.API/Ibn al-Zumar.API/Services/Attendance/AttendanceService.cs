@@ -9,7 +9,8 @@ namespace IbnAlZumar.API.Services.Attendance;
 
 public class AttendanceService : IAttendanceService
 {
-    private const double MatchThreshold = 0.75;
+    // A permissive threshold accommodates normal microphone, pitch, and ambient-noise variation.
+    private const double MatchThreshold = 0.38;
 
     private readonly ApplicationDbContext _db;
     private readonly IVoiceVerificationService _voiceService;
@@ -101,6 +102,8 @@ public class AttendanceService : IAttendanceService
             return new AttendanceCheckResultDto
             {
                 Success = false,
+                Action = "Unknown",
+                FullName = null,
                 Message = "تعذر التعرف على الصوت. حاول مرة أخرى بصوت أوضح أو تواصل مع الإدارة.",
                 MatchConfidence = bestScore
             };

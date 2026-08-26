@@ -211,6 +211,20 @@ public class ProductService : IProductService
         return await GetByIdAsync(product.Id);
     }
 
+    public async Task<ProductResponseDto> UpdatePriceAsync(int id, decimal newPrice)
+    {
+        if (newPrice <= 0)
+            throw new BadRequestException("السعر يجب أن يكون أكبر من صفر.");
+
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+        if (product is null)
+            throw new NotFoundException($"لم يتم العثور على منتج بالرقم {id}");
+
+        product.SellingPrice = newPrice;
+        await _context.SaveChangesAsync();
+        return await GetByIdAsync(id);
+    }
+
     public async Task<ProductResponseDto> UpdateAsync(int id, UpdateProductDto dto)
     {
         var product = await _context.Products
