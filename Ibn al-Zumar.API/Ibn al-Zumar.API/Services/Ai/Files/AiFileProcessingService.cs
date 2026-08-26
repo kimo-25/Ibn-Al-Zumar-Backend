@@ -6,15 +6,6 @@ using IbnAlZumar.API.DTOs.Ai;
 
 namespace IbnAlZumar.API.Ai.Files
 {
-    /// <summary>
-    /// NOTE ON NUGET PACKAGES: this implementation needs two packages that your project may
-    /// not have yet:
-    ///   dotnet add package ClosedXML
-    ///   dotnet add package DocumentFormat.OpenXml
-    /// If your existing Excel bulk-import code (IProductService.BulkImportAsync) already
-    /// depends on one of these (or on EPPlus/NPOI instead), prefer reusing that same library
-    /// here for consistency and swap the xlsx-reading block accordingly.
-    /// </summary>
     public class AiFileProcessingService : IAiFileProcessingService
     {
         private static readonly HashSet<string> ImageAndPdfMimeTypes = new(StringComparer.OrdinalIgnoreCase)
@@ -40,29 +31,29 @@ namespace IbnAlZumar.API.Ai.Files
             string.Equals(mimeType, XlsxMimeType, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(mimeType, XlsMimeType, StringComparison.OrdinalIgnoreCase);
 
-        public async Task<GeminiPart> BuildGeminiPartAsync(AiChatAttachmentDto attachment, CancellationToken ct)
+        public Task<GeminiPart> BuildGeminiPartAsync(AiChatAttachmentDto attachment, CancellationToken ct)
         {
             if (ImageAndPdfMimeTypes.Contains(attachment.MimeType))
             {
                 // Native multimodal path — Gemini reads pixels/PDF pages directly.
-                return GeminiPart.FromInlineData(attachment.MimeType, attachment.Base64Data);
+                return Task.FromResult(GeminiPart.FromInlineData(attachment.MimeType, attachment.Base64Data));
             }
 
             if (string.Equals(attachment.MimeType, DocxMimeType, StringComparison.OrdinalIgnoreCase))
             {
                 var text = ExtractDocxText(attachment);
-                return GeminiPart.FromText(WrapExtractedText(attachment.FileName, text));
+                return Task.FromResult(GeminiPart.FromText(WrapExtractedText(attachment.FileName, text)));
             }
 
             if (string.Equals(attachment.MimeType, XlsxMimeType, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(attachment.MimeType, XlsMimeType, StringComparison.OrdinalIgnoreCase))
             {
                 var text = ExtractXlsxText(attachment);
-                return GeminiPart.FromText(WrapExtractedText(attachment.FileName, text));
+                return Task.FromResult(GeminiPart.FromText(WrapExtractedText(attachment.FileName, text)));
             }
 
             _logger.LogWarning("AiFileProcessingService: unsupported attachment mime type '{Mime}'", attachment.MimeType);
-            return GeminiPart.FromText($"[تنبيه: تعذر قراءة الملف المرفق '{attachment.FileName}' لأن صيغته غير مدعومة.]");
+            return Task.FromResult(GeminiPart.FromText($"[تنبيه: تعذر قراءة الملف المرفق '{attachment.FileName}' لأن صيغته غير مدعومة.]"));
         }
 
         private static string WrapExtractedText(string fileName, string extractedText)
@@ -108,7 +99,6 @@ namespace IbnAlZumar.API.Ai.Files
                     }
                 }
 
-                // Cap to keep the request payload reasonable.
                 return string.Join("\n", lines.Take(500));
             }
             catch (Exception ex)

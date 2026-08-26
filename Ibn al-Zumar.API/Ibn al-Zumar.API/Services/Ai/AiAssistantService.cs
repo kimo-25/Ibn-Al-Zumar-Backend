@@ -6,6 +6,7 @@ using IbnAlZumar.API.Ai.Files;
 using IbnAlZumar.API.Ai.Models;
 using IbnAlZumar.API.Ai.Tools;
 using IbnAlZumar.API.DTOs.Ai;
+using IbnAlZumar.API.Services.Ai;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +20,7 @@ namespace IbnAlZumar.API.Ai
         private readonly IAiFileProcessingService _fileProcessingService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AiAssistantService> _logger;
+        private readonly IAiAuditLogService _auditLogService;
 
         // تجاهل القيم الـ null عند السريالة لمنع خطأ Unknown Field في Gemini API
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
@@ -32,7 +34,8 @@ namespace IbnAlZumar.API.Ai
             IbnAlZumar.API.Ai.Tools.AiToolRegistry toolRegistry,
             IAiFileProcessingService fileProcessingService,
             IServiceProvider serviceProvider,
-            ILogger<AiAssistantService> logger)
+            ILogger<AiAssistantService> logger,
+            IAiAuditLogService auditLogService)
         {
             _httpClient = httpClient;
             _settings = settings.Value;
@@ -40,6 +43,7 @@ namespace IbnAlZumar.API.Ai
             _fileProcessingService = fileProcessingService;
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _auditLogService = auditLogService;
         }
 
         public async Task<AiChatResponseDto> ChatAsync(
@@ -131,6 +135,7 @@ namespace IbnAlZumar.API.Ai
                             success = false,
                             error = "هذا الإجراء غير متاح لصلاحياتك الحالية."
                         };
+                        await _auditLogService.LogAsync(new AiAuditEntry(null, userEmail, userRoles, "tool_call", request.Prompt, call.Name, false, "unauthorized"), ct);
                     }
                     else
                     {
@@ -138,6 +143,7 @@ namespace IbnAlZumar.API.Ai
                         {
                             toolResult = await tool.ExecuteAsync(call.Args, toolContext, ct);
                             toolsUsed.Add(tool.Name);
+                            await _auditLogService.LogAsync(new AiAuditEntry(null, userEmail, userRoles, "tool_call", request.Prompt, tool.Name, true), ct);
 
                             var (url, fileName) = TryExtractDownloadLink(toolResult);
                             if (url != null)
@@ -148,14 +154,17 @@ namespace IbnAlZumar.API.Ai
                         }
                         catch (UnauthorizedAccessException ex)
                         {
+                            await _auditLogService.LogAsync(new AiAuditEntry(null, userEmail, userRoles, "tool_call", request.Prompt, tool.Name, false, ex.Message), ct);
                             toolResult = new { success = false, error = ex.Message };
                         }
                         catch (ArgumentException ex)
                         {
+                            await _auditLogService.LogAsync(new AiAuditEntry(null, userEmail, userRoles, "tool_call", request.Prompt, tool.Name, false, ex.Message), ct);
                             toolResult = new { success = false, error = ex.Message };
                         }
                         catch (Exception ex)
                         {
+                            await _auditLogService.LogAsync(new AiAuditEntry(null, userEmail, userRoles, "tool_call", request.Prompt, tool.Name, false, ex.Message), ct);
                             _logger.LogError(ex, "AI assistant: tool '{Tool}' threw", call.Name);
                             toolResult = new { success = false, error = "حدث خطأ أثناء تنفيذ العملية." };
                         }

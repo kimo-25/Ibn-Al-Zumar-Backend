@@ -61,7 +61,7 @@ builder.Services.Configure<EmailSettings>(
 builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection(GeminiSettings.SectionName));
 
 // ---------------------------------------------------------------------------
-// DbContext (SQL Server Configuration for Azure / Local)
+// DbContext (SQL Server Configuration)
 // ---------------------------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection")
@@ -73,7 +73,9 @@ if (string.IsNullOrWhiteSpace(connectionString))
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    options.UseSqlServer(connectionString);
+});
 
 // ---------------------------------------------------------------------------
 // Password hashing — Standalone PasswordHasher<User>
@@ -86,6 +88,8 @@ builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IAiAuditLogService, AiAuditLogService>();
+builder.Services.AddScoped<IInvoiceToExcelService, InvoiceToExcelService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
@@ -179,7 +183,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicyName, policy =>
     {
-        policy.WithOrigins("https://kimo-25.github.io")
+        policy.WithOrigins("<https://kimo-25.github.io>")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

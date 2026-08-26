@@ -3,14 +3,14 @@ using IbnAlZumar.API.Services.Inventory;
 
 namespace IbnAlZumar.API.Ai.Tools
 {
-    /// <summary>Returns products whose quantity on hand is at/below their reorder level.</summary>
+    /// <summary>Returns products whose quantity on hand is zero or at/below their reorder level.</summary>
     public class GetLowStockProductsTool : IAiTool
     {
         public string Name => "get_low_stock_products";
 
         public string Description =>
-            "يرجع المنتجات التي وصل مخزونها لحد إعادة الطلب أو أقل، اختيارياً في مستودع معيّن. " +
-            "Returns products at or below their reorder level, optionally scoped to one warehouse.";
+            "يرجع المنتجات منتهية المخزون (كميتها 0) أو التي وصل مخزونها لحد إعادة الطلب أو أقل. " +
+            "Returns out of stock (quantity 0) and low stock products at or below their reorder level.";
 
         public object ParametersSchema => new
         {
@@ -38,25 +38,23 @@ namespace IbnAlZumar.API.Ai.Tools
             }
 
             var inventoryService = context.Services.GetRequiredService<IInventoryService>();
-            var stockLevels = await inventoryService.GetStockLevelsAsync(warehouseId, search: null);
 
-            var lowStock = stockLevels
-                .Where(s => s.QuantityOnHand <= s.ReorderLevel)
-                .OrderBy(s => s.QuantityOnHand)
-                .Take(50)
-                .ToList();
+            // استدعاء دالة النواقص المباشرة المعتمدة في الـ API Controller
+            var lowStockProducts = await inventoryService.GetLowStockProductsAsync(warehouseId);
+            var list = lowStockProducts.ToList();
 
             return new
             {
-                count = lowStock.Count,
-                products = lowStock.Select(s => new
+                totalCount = list.Count,
+                summary = $"يوجد {list.Count} منتج منتهي أو أوشك على النفاد.",
+                products = list.Take(50).Select(p => new
                 {
-                    s.ProductId,
-                    s.SKU,
-                    s.ProductName,
-                    s.WarehouseId,
-                    s.QuantityOnHand,
-                    s.ReorderLevel
+                    Id = p.ProductId,
+                    Sku = p.SKU,
+                    Name = p.ProductName,
+                    CurrentStock = p.QuantityOnHand,
+                    MinStockThreshold = p.ReorderLevel,
+                    IsOutOfStock = p.QuantityOnHand <= 0
                 })
             };
         }

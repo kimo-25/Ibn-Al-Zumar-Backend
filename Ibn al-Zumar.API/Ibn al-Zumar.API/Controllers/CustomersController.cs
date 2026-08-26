@@ -19,8 +19,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpGet]
-        // Allow Owner, Moderator and Admin to access customers list (Admin and Owner are full-access)
-        [Authorize(Roles = "Owner, Moderator, Admin")]
+        [Authorize(Roles = "Owner,STORE_OWNER,Admin,SuperAdmin,Moderator,Cashier,Store POS")]
         public async Task<IActionResult> GetAll([FromQuery] CustomerFilterDto filter)
         {
             var result = await _customerService.GetAllAsync(filter);
@@ -28,7 +27,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Owner, Moderator, Admin")]
+        [Authorize(Roles = "Owner,STORE_OWNER,Admin,SuperAdmin,Moderator,Cashier,Store POS")]
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -43,7 +42,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Owner, Moderator, Admin")]
+        [Authorize(Roles = "Owner,STORE_OWNER,Admin,SuperAdmin,Moderator,Cashier,Store POS")]
         public async Task<IActionResult> Create([FromBody] CreateCustomerDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -59,7 +58,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "Owner, Moderator, Admin")]
+        [Authorize(Roles = "Owner,STORE_OWNER,Admin,SuperAdmin,Moderator")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateSalesCustomerDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -79,7 +78,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Owner, Moderator, Admin")]
+        [Authorize(Roles = "Owner,STORE_OWNER,Admin,SuperAdmin")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -98,7 +97,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPost("{id:int}/adjust-debt")]
-        [Authorize(Roles = "Owner, Moderator, Admin")]
+        [Authorize(Roles = "Owner,STORE_OWNER,Admin,SuperAdmin")]
         public async Task<IActionResult> AdjustDebt(int id, [FromBody] AdjustCustomerDebtDto dto)
         {
             try

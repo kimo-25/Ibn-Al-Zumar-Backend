@@ -65,11 +65,22 @@ public class ProductService : IProductService
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
-            var term = filter.SearchTerm.Trim().ToLower();
+            // Normalize the input in .NET, then normalize the searchable columns in SQL.
+            // The chained Replace calls are translated by EF Core to SQL REPLACE calls.
+            var term = NormalizeArabic(filter.SearchTerm);
+            var pattern = $"%{EscapeLikePattern(term)}%";
+
             query = query.Where(p =>
-                p.Name.ToLower().Contains(term) ||
-                (p.SKU != null && p.SKU.ToLower().Contains(term)) ||
-                (p.Barcode != null && p.Barcode.ToLower().Contains(term)));
+                EF.Functions.Like(EF.Functions.Collate(p.Name.Replace("أ", "ا").Replace("إ", "ا").Replace("آ", "ا").Replace("ة", "ه").Replace("ى", "ي"), "Arabic_CI_AI"), pattern) ||
+                (p.NameAr != null && EF.Functions.Like(EF.Functions.Collate(p.NameAr.Replace("أ", "ا").Replace("إ", "ا").Replace("آ", "ا").Replace("ة", "ه").Replace("ى", "ي"), "Arabic_CI_AI"), pattern)) ||
+                (p.Description != null && EF.Functions.Like(EF.Functions.Collate(p.Description.Replace("أ", "ا").Replace("إ", "ا").Replace("آ", "ا").Replace("ة", "ه").Replace("ى", "ي"), "Arabic_CI_AI"), pattern)) ||
+                (p.SKU != null && EF.Functions.Like(EF.Functions.Collate(p.SKU, "Arabic_CI_AI"), pattern)) ||
+                (p.Barcode != null && EF.Functions.Like(EF.Functions.Collate(p.Barcode, "Arabic_CI_AI"), pattern)) ||
+                (p.Brand != null && EF.Functions.Like(EF.Functions.Collate(p.Brand.Name.Replace("أ", "ا").Replace("إ", "ا").Replace("آ", "ا").Replace("ة", "ه").Replace("ى", "ي"), "Arabic_CI_AI"), pattern)) ||
+                (p.Category != null && (
+                    EF.Functions.Like(EF.Functions.Collate(p.Category.Name.Replace("أ", "ا").Replace("إ", "ا").Replace("آ", "ا").Replace("ة", "ه").Replace("ى", "ي"), "Arabic_CI_AI"), pattern) ||
+                    (p.Category.NameAr != null && EF.Functions.Like(EF.Functions.Collate(p.Category.NameAr.Replace("أ", "ا").Replace("إ", "ا").Replace("آ", "ا").Replace("ة", "ه").Replace("ى", "ي"), "Arabic_CI_AI"), pattern)) ||
+                    (p.Category.Description != null && EF.Functions.Like(EF.Functions.Collate(p.Category.Description.Replace("أ", "ا").Replace("إ", "ا").Replace("آ", "ا").Replace("ة", "ه").Replace("ى", "ي"), "Arabic_CI_AI"), pattern)))));
         }
 
         if (filter.CategoryId.HasValue)
@@ -119,6 +130,22 @@ public class ProductService : IProductService
             PageNumber = filter.PageNumber,
             PageSize = filter.PageSize
         };
+    }
+
+    private static string NormalizeArabic(string value)
+    {
+        return value.Trim().ToLowerInvariant()
+            .Replace("أ", "ا")
+            .Replace("إ", "ا")
+            .Replace("آ", "ا")
+            .Replace("ة", "ه")
+            .Replace("ى", "ي");
+    }
+
+
+    private static string EscapeLikePattern(string value)
+    {
+        return value.Replace("[", "[[]").Replace("%", "[%]").Replace("_", "[_]");
     }
 
     public async Task<ProductResponseDto> GetByIdAsync(int id)

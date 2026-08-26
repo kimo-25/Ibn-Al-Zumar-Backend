@@ -8,7 +8,7 @@ namespace IbnAlZumar.API.Controllers
 {
     [ApiController]
     [Route("api/ai")]
-    [Authorize(Roles = "Admin,Moderator")]
+    [Authorize(Roles = "Admin,SuperAdmin,Moderator,Cashier,STORE_OWNER,ONLINE_MANAGER,Owner")]
     public class AiVoiceController : ControllerBase
     {
         private readonly IVoiceCommandService _voiceCommandService;

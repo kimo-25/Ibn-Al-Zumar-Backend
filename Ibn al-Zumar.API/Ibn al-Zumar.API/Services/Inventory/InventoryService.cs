@@ -316,6 +316,37 @@ namespace IbnAlZumar.API.Services.Inventory
                 .ToListAsync();
         }
 
+        public async Task<List<StockLevelDto>> GetLowStockProductsAsync(int? warehouseId)
+        {
+            var query = _context.Products
+                .AsNoTracking()
+                .Where(p => p.IsActive)
+                .AsQueryable();
+
+            return await query
+                .Select(p => new
+                {
+                    Product = p,
+                    TotalStock = p.Stocks
+                        .Where(s => !warehouseId.HasValue || s.WarehouseId == warehouseId.Value)
+                        .Sum(s => (int?)s.QuantityOnHand) ?? 0
+                })
+                .Where(x => x.TotalStock <= 0 || x.TotalStock <= x.Product.MinStockThreshold)
+                .OrderBy(x => x.TotalStock)
+                .Select(x => new StockLevelDto
+                {
+                    ProductId = x.Product.Id,
+                    SKU = x.Product.SKU,
+                    ProductName = x.Product.Name,
+                    ProductNameAr = x.Product.NameAr,
+                    ImageUrl = x.Product.ImageUrl,
+                    WarehouseId = warehouseId ?? 0,
+                    QuantityOnHand = x.TotalStock,
+                    ReorderLevel = x.Product.MinStockThreshold
+                })
+                .ToListAsync();
+        }
+
         private static string TranslateAdjustReason(string reason) => reason switch
         {
             "Damaged" => "تالف",

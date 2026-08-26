@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using IbnAlZumar.Domain.Common;
 using IbnAlZumar.Domain.Entities.Attendance;
+using IbnAlZumar.Domain.Entities.Ai;
 using IbnAlZumar.Domain.Entities.Catalog;
 using IbnAlZumar.Domain.Entities.Identity;
 using IbnAlZumar.Domain.Entities.Inventory;
@@ -71,6 +72,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<AttendanceLog> AttendanceLogs => Set<AttendanceLog>();
     public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
 
+    // ---- AI audit trail ----
+    public DbSet<AiAuditLog> AiAuditLogs => Set<AiAuditLog>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -84,6 +88,20 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        modelBuilder.Entity<AiAuditLog>(entity =>
+        {
+            entity.ToTable("AiAuditLogs");
+            entity.HasKey(log => log.Id);
+            entity.Property(log => log.UserEmail).HasMaxLength(320);
+            entity.Property(log => log.Roles).HasMaxLength(1000).IsRequired();
+            entity.Property(log => log.Action).HasMaxLength(64).IsRequired();
+            entity.Property(log => log.ToolName).HasMaxLength(128);
+            entity.Property(log => log.IpAddress).HasMaxLength(64);
+            entity.HasIndex(log => log.TimestampUtc);
+            entity.HasIndex(log => new { log.UserId, log.TimestampUtc });
+            entity.HasIndex(log => log.ToolName);
+        });
 
         // ClientUuid Unique Filtered Index for Offline Sync Idempotency (SQL Server standard filter)
         modelBuilder.Entity<Order>()

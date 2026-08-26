@@ -9,5 +9,8 @@ namespace IbnAlZumar.API.Services.Inventory
         Task<List<InventoryTransactionResponseDto>> GetTransactionHistoryAsync(int? productId, int? warehouseId, int take);
         Task<List<WarehouseDto>> GetWarehousesAsync();
         Task<List<StockLevelDto>> GetStockLevelsAsync(int? warehouseId, string? search);
+
+        // الميثود الجديدة للنواقص والمنتجات المنتهية
+        Task<List<StockLevelDto>> GetLowStockProductsAsync(int? warehouseId);
     }
 }
