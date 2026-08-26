@@ -84,7 +84,10 @@ public class OrderService : IOrderService
                 Notes = dto.Notes,
                 Source = OrderSource.Online,
                 Status = OrderStatus.PendingConfirmation,
-                PaymentMethod = PaymentMethod.Cash,
+                PaymentMethod = dto.PaymentMethod,
+                PaymentStatus = dto.PaymentMethod == PaymentMethod.CashOnDelivery || dto.PaymentMethod == PaymentMethod.Cash
+                    ? PaymentStatus.CodPending
+                    : PaymentStatus.Pending,
                 WarehouseId = defaultWarehouseId,
                 OrderDate = DateTime.UtcNow,
                 SubTotal = calculatedTotal,
@@ -107,7 +110,13 @@ public class OrderService : IOrderService
             {
                 Id = order.Id,
                 CustomerName = order.GuestName ?? string.Empty,
+                CustomerPhone = order.GuestPhone ?? string.Empty,
+                OrderNumber = order.OrderNumber,
                 TotalAmount = order.TotalAmount,
+                Status = order.Status.ToString(),
+                PaymentMethod = order.PaymentMethod.ToString(),
+                PaymentStatus = order.PaymentStatus.ToString(),
+                PaymobTransactionId = order.PaymobTransactionId,
                 CreatedAt = order.OrderDate
             };
         }

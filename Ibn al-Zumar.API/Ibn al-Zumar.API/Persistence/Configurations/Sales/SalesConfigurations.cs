@@ -41,6 +41,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.Source).HasConversion<string>().HasMaxLength(20);
         builder.Property(o => o.Status).HasConversion<string>().HasMaxLength(30);
         builder.Property(o => o.PaymentMethod).HasConversion<string>().HasMaxLength(30);
+        builder.Property(o => o.PaymentStatus).HasConversion<string>().HasMaxLength(30);
+        builder.Property(o => o.PaymobOrderId).HasMaxLength(100);
+        builder.Property(o => o.PaymobTransactionId).HasMaxLength(100);
+        builder.HasIndex(o => o.PaymobOrderId);
+        builder.HasIndex(o => o.PaymobTransactionId);
         builder.Property(o => o.DiscountType).HasConversion<string>().HasMaxLength(20);
 
         builder.Property(o => o.SubTotal).HasPrecision(18, 2);
@@ -105,6 +110,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.Method).HasConversion<string>().HasMaxLength(30);
+        builder.Property(p => p.Status).HasConversion<string>().HasMaxLength(30);
+        builder.Property(p => p.PaymobTransactionId).HasMaxLength(100);
+        builder.HasIndex(p => p.PaymobTransactionId);
         builder.Property(p => p.Amount).HasPrecision(18, 2);
         builder.Property(p => p.Notes).HasMaxLength(300);
 

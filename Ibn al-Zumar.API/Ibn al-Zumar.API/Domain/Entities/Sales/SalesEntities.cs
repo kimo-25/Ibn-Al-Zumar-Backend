@@ -72,6 +72,13 @@ public class Order : BaseEntity
     public OrderSource Source { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.PendingConfirmation;
     public PaymentMethod PaymentMethod { get; set; }
+    public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.CodPending;
+
+    [MaxLength(100)]
+    public string? PaymobOrderId { get; set; }
+
+    [MaxLength(100)]
+    public string? PaymobTransactionId { get; set; }
 
     /// <summary>Fulfilling warehouse. Defaults to Id = 1 in Phase 1; picked explicitly in Phase 2 POS.</summary>
     public int WarehouseId { get; set; }
@@ -155,6 +162,10 @@ public class Payment : BaseEntity
 
     public decimal Amount { get; set; }
     public PaymentMethod Method { get; set; }
+    public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
+
+    [MaxLength(100)]
+    public string? PaymobTransactionId { get; set; }
 
     public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
 

@@ -1519,6 +1519,19 @@ namespace Ibn_alZumar.API.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PaymobOrderId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PaymobTransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("ShippingAddress")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
@@ -1564,6 +1577,10 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("OrderNumber")
                         .IsUnique();
+
+                    b.HasIndex("PaymobOrderId");
+
+                    b.HasIndex("PaymobTransactionId");
 
                     b.HasIndex("ShippingZoneId");
 
@@ -1664,8 +1681,17 @@ namespace Ibn_alZumar.API.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("PaymobTransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int?>("ReceivedByUserId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1675,6 +1701,8 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("PaymobTransactionId");
 
                     b.HasIndex("ReceivedByUserId");
 

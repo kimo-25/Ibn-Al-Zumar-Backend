@@ -15,6 +15,7 @@ using IbnAlZumar.API.Services.Customers;
 using IbnAlZumar.API.Services.Identity;
 using IbnAlZumar.API.Services.Inventory;
 using IbnAlZumar.API.Services.Purchasing;
+using IbnAlZumar.API.Services.Payments;
 using IbnAlZumar.API.Services.Reminders;
 using IbnAlZumar.API.Services.Sales;
 using IbnAlZumar.Domain.Entities.Identity;
@@ -59,6 +60,7 @@ builder.Services.Configure<EmailSettings>(
 
 // Gemini AI Settings
 builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection(GeminiSettings.SectionName));
+builder.Services.Configure<PaymobOptions>(builder.Configuration.GetSection("Paymob"));
 
 // ---------------------------------------------------------------------------
 // DbContext (SQL Server Configuration)
@@ -97,6 +99,10 @@ builder.Services.AddScoped<IbnAlZumar.API.Services.Purchasing.IPurchasingService
 
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddHttpClient<IPaymobService, PaymobService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // Reminders Service Registration
 builder.Services.AddScoped<IReminderService, ReminderService>();

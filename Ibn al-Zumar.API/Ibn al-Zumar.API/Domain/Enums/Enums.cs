@@ -33,7 +33,16 @@ public enum PaymentMethod
     CreditCard = 3,
     InstaPay = 4,
     Fawry = 5,
-    CustomerCredit = 6
+    CustomerCredit = 6,
+    Wallet = 7
+}
+
+public enum PaymentStatus
+{
+    Pending = 1,
+    Paid = 2,
+    Failed = 3,
+    CodPending = 4
 }
 
 /// <summary>
