@@ -10,7 +10,7 @@ namespace IbnAlZumar.API.Services.Attendance;
 public class AttendanceService : IAttendanceService
 {
     // A permissive threshold accommodates normal microphone, pitch, and ambient-noise variation.
-    private const double MatchThreshold = 0.38;
+    private const double MatchThreshold = 0.30;
 
     private readonly ApplicationDbContext _db;
     private readonly IVoiceVerificationService _voiceService;

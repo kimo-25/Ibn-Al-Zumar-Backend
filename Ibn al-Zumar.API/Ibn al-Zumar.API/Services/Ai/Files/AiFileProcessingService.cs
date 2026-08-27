@@ -36,9 +36,15 @@ namespace IbnAlZumar.API.Ai.Files
 
         public Task<GeminiPart> BuildGeminiPartAsync(AiChatAttachmentDto attachment, CancellationToken ct)
         {
-            var mimeType = attachment?.MimeType ?? string.Empty;
-            var fileName = attachment?.FileName ?? "attachment";
-            var base64Data = attachment?.Base64Data ?? string.Empty;
+            // Null-check صريح بدل الاعتماد على "?." — ده بيخلي الكومبايلر متأكد إن
+            // attachment مش null طول باقي الميثود (Nullable Flow Analysis narrowing)،
+            // وبيحل تحذيري CS8604/CS8602 اللي كانوا ناتجين عن استخدام "attachment?."
+            // مبدئياً ثم الاعتماد على "attachment" مباشرة بعد كده.
+            ArgumentNullException.ThrowIfNull(attachment);
+
+            var mimeType = attachment.MimeType ?? string.Empty;
+            var fileName = attachment.FileName ?? "attachment";
+            var base64Data = attachment.Base64Data ?? string.Empty;
 
             if (ImageAndPdfMimeTypes.Contains(mimeType))
             {
@@ -58,14 +64,14 @@ namespace IbnAlZumar.API.Ai.Files
                 return Task.FromResult(GeminiPart.FromText(WrapExtractedText(fileName, text)));
             }
 
-            if (string.Equals(attachment.MimeType, XlsxMimeType, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(attachment.MimeType, XlsMimeType, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(mimeType, XlsxMimeType, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(mimeType, XlsMimeType, StringComparison.OrdinalIgnoreCase))
             {
                 var text = ExtractXlsxText(attachment);
                 return Task.FromResult(GeminiPart.FromText(WrapExtractedText(fileName, text)));
             }
 
-            _logger.LogWarning("AiFileProcessingService: unsupported attachment mime type '{Mime}'", attachment.MimeType);
+            _logger.LogWarning("AiFileProcessingService: unsupported attachment mime type '{Mime}'", mimeType);
             return Task.FromResult(GeminiPart.FromText($"[تنبيه: تعذر قراءة الملف المرفق '{fileName}' لأن صيغته غير مدعومة.]"));
         }
 
@@ -97,7 +103,8 @@ namespace IbnAlZumar.API.Ai.Files
         {
             try
             {
-                var bytes = Convert.FromBase64String(attachment.Base64Data);
+                var base64Data = attachment.Base64Data ?? string.Empty;
+                var bytes = Convert.FromBase64String(base64Data);
                 using var stream = new MemoryStream(bytes);
                 using var doc = WordprocessingDocument.Open(stream, false);
 
@@ -127,7 +134,7 @@ namespace IbnAlZumar.API.Ai.Files
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "AiFileProcessingService: failed to extract text from docx '{File}'", attachment.FileName);
+                _logger.LogError(ex, "AiFileProcessingService: failed to extract text from docx '{File}'", attachment.FileName ?? "attachment");
                 return string.Empty;
             }
         }
@@ -136,7 +143,8 @@ namespace IbnAlZumar.API.Ai.Files
         {
             try
             {
-                var bytes = Convert.FromBase64String(attachment.Base64Data);
+                var base64Data = attachment.Base64Data ?? string.Empty;
+                var bytes = Convert.FromBase64String(base64Data);
                 using var stream = new MemoryStream(bytes);
                 using var workbook = new XLWorkbook(stream);
 
@@ -170,7 +178,7 @@ namespace IbnAlZumar.API.Ai.Files
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "AiFileProcessingService: failed to extract text from xlsx '{File}'", attachment.FileName);
+                _logger.LogError(ex, "AiFileProcessingService: failed to extract text from xlsx '{File}'", attachment.FileName ?? "attachment");
                 return string.Empty;
             }
         }

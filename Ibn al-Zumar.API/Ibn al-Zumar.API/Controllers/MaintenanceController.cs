@@ -4,6 +4,7 @@ using System.Net.Mail;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using IbnAlZumar.API.DTOs.Maintenance;
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.Domain.Entities.Maintenance;
 using IbnAlZumar.Domain.Enums;
@@ -28,7 +29,7 @@ public class MaintenanceController : ControllerBase
     [HttpPost]
     [Authorize]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> CreateRequest([FromForm] string description, [FromForm] int deliveryMethod, [FromForm] List<IFormFile>? images, [FromForm] IFormFile? image)
+    public async Task<IActionResult> CreateRequest([FromForm] CreateMaintenanceRequestDto dto)
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
         int? userId = int.TryParse(userIdStr, out int parsedId) ? parsedId : null;
@@ -42,8 +43,8 @@ public class MaintenanceController : ControllerBase
             customerId = customer?.Id;
         }
 
-        var uploadedImages = (images ?? new List<IFormFile>()).Where(f => f != null && f.Length > 0).ToList();
-        if (image != null && image.Length > 0) uploadedImages.Add(image);
+        var uploadedImages = (dto.Images ?? new List<IFormFile>()).Where(f => f != null && f.Length > 0).ToList();
+        if (dto.Image != null && dto.Image.Length > 0) uploadedImages.Add(dto.Image);
         var imageUrls = new List<string>();
 
         foreach (var uploadedImage in uploadedImages.DistinctBy(f => f.FileName))
@@ -73,8 +74,8 @@ public class MaintenanceController : ControllerBase
         {
             UserId = userId,
             CustomerId = customerId,
-            ProblemDescription = description,
-            DeliveryMethod = (DeliveryMethod)deliveryMethod,
+            ProblemDescription = dto.Description,
+            DeliveryMethod = (DeliveryMethod)dto.DeliveryMethod,
             ImageUrl = imageUrls.FirstOrDefault(),
             ImageUrls = imageUrls,
             Status = MaintenanceStatus.Pending
