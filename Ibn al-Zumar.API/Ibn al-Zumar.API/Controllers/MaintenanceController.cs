@@ -28,7 +28,7 @@ public class MaintenanceController : ControllerBase
     [HttpPost]
     [Authorize]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> CreateRequest([FromForm] string description, [FromForm] int deliveryMethod, IFormFile? image)
+    public async Task<IActionResult> CreateRequest([FromForm] string description, [FromForm] int deliveryMethod, [FromForm] List<IFormFile>? images, [FromForm] IFormFile? image)
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
         int? userId = int.TryParse(userIdStr, out int parsedId) ? parsedId : null;
@@ -42,15 +42,17 @@ public class MaintenanceController : ControllerBase
             customerId = customer?.Id;
         }
 
-        string? imageUrl = null;
+        var uploadedImages = (images ?? new List<IFormFile>()).Where(f => f != null && f.Length > 0).ToList();
+        if (image != null && image.Length > 0) uploadedImages.Add(image);
+        var imageUrls = new List<string>();
 
-        if (image != null)
+        foreach (var uploadedImage in uploadedImages.DistinctBy(f => f.FileName))
         {
             // حفظ الصورة في مجلد uploads الخارجي المعرف في Program.cs بدلاً من wwwroot
             var uploadsFolder = Path.Combine(_environment.ContentRootPath, "uploads", "maintenance");
             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
-            var extension = Path.GetExtension(image.FileName);
+            var extension = Path.GetExtension(uploadedImage.FileName);
             if (string.IsNullOrWhiteSpace(extension) || extension.Length > 10)
             {
                 extension = ".png";
@@ -60,11 +62,11 @@ public class MaintenanceController : ControllerBase
             var filePath = Path.Combine(uploadsFolder, uniqueName);
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                await image.CopyToAsync(stream);
+                await uploadedImage.CopyToAsync(stream);
             }
 
             // مسار نسبي آمن بدون سلاش زائدة في البداية
-            imageUrl = $"uploads/maintenance/{uniqueName}";
+            imageUrls.Add($"uploads/maintenance/{uniqueName}");
         }
 
         var request = new MaintenanceRequest
@@ -73,7 +75,8 @@ public class MaintenanceController : ControllerBase
             CustomerId = customerId,
             ProblemDescription = description,
             DeliveryMethod = (DeliveryMethod)deliveryMethod,
-            ImageUrl = imageUrl,
+            ImageUrl = imageUrls.FirstOrDefault(),
+            ImageUrls = imageUrls,
             Status = MaintenanceStatus.Pending
         };
 
@@ -98,6 +101,7 @@ public class MaintenanceController : ControllerBase
                 r.Id,
                 r.ProblemDescription,
                 r.ImageUrl,
+                ImageUrls = r.ImageUrls,
                 r.DeliveryMethod,
                 r.Status,
                 r.EstimatedPrice,
@@ -129,6 +133,7 @@ public class MaintenanceController : ControllerBase
                 UserEmail = r.User != null ? r.User.Email : (r.Customer != null ? r.Customer.Email : ""),
                 r.ProblemDescription,
                 r.ImageUrl,
+                ImageUrls = r.ImageUrls,
                 r.DeliveryMethod,
                 r.Status,
                 r.EstimatedPrice,

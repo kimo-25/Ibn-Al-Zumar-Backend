@@ -12,6 +12,7 @@
         public const string Cashier = "Cashier";
         public const string StoreOwner = "STORE_OWNER";
         public const string OnlineManager = "ONLINE_MANAGER";
+        public const string Customer = "Customer";
 
         /// <summary>Everyone allowed to open the AI assistant at all.</summary>
         public static readonly string[] AllStaff = { Admin, Moderator, Cashier, StoreOwner, OnlineManager };
@@ -34,6 +35,6 @@
         public static readonly string[] CatalogWrite = { Admin, Moderator };
 
         /// <summary>Roles allowed to attach files (invoices/documents/images) to an AI chat turn.</summary>
-        public static readonly string[] FileUpload = { Admin, Moderator };
+        public static readonly string[] FileUpload = { Admin, Moderator, Customer };
     }
 }

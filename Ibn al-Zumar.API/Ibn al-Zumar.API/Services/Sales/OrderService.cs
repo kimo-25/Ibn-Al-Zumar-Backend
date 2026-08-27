@@ -25,6 +25,8 @@ public class OrderService : IOrderService
         try
         {
             decimal calculatedTotal = 0;
+            var normalizedDiscountType = string.Equals(dto.DiscountType, "Percentage", StringComparison.OrdinalIgnoreCase) ? DiscountType.Percentage : DiscountType.FixedAmount;
+            var discountValue = Math.Max(dto.DiscountValue, 0);
             var orderItems = new List<OrderItem>();
 
             foreach (var item in dto.Items)
@@ -44,6 +46,10 @@ public class OrderService : IOrderService
                 });
             }
 
+            var computedDiscount = normalizedDiscountType == DiscountType.Percentage
+                ? calculatedTotal * Math.Min(discountValue, 100) / 100m
+                : discountValue;
+            computedDiscount = Math.Min(computedDiscount, calculatedTotal);
             var defaultWarehouseId = await _context.Warehouses
                 .Select(w => w.Id)
                 .FirstOrDefaultAsync();
@@ -82,7 +88,7 @@ public class OrderService : IOrderService
                 ShippingAddress = dto.ShippingAddress,
                 ShippingZoneId = dto.ShippingZoneId,
                 Notes = dto.Notes,
-                Source = OrderSource.Online,
+                Source = dto.OrderSource,
                 Status = OrderStatus.PendingConfirmation,
                 PaymentMethod = dto.PaymentMethod,
                 PaymentStatus = dto.PaymentMethod == PaymentMethod.CashOnDelivery || dto.PaymentMethod == PaymentMethod.Cash
@@ -91,10 +97,10 @@ public class OrderService : IOrderService
                 WarehouseId = defaultWarehouseId,
                 OrderDate = DateTime.UtcNow,
                 SubTotal = calculatedTotal,
-                DiscountType = DiscountType.None,
-                DiscountValue = 0,
-                DiscountAmount = 0,
-                TotalAmount = calculatedTotal,
+                DiscountType = normalizedDiscountType,
+                DiscountValue = discountValue,
+                DiscountAmount = computedDiscount,
+                TotalAmount = Math.Max(calculatedTotal - computedDiscount, 0),
                 Items = orderItems,
                 IsCustomZoneRequested = dto.IsCustomZoneRequested,
                 CustomZoneName = dto.IsCustomZoneRequested ? dto.CustomZoneName?.Trim() : null,

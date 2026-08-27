@@ -19,6 +19,8 @@ namespace IbnAlZumar.API.DTOs.Sales
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
         public OrderSource OrderSource { get; set; } = OrderSource.Online;
         public decimal DiscountAmount { get; set; } = 0;
+        public string DiscountType { get; set; } = "Fixed";
+        public decimal DiscountValue { get; set; } = 0;
         public int? CustomerId { get; set; }
 
         public List<CreateOrderItemDto> Items { get; set; } = new();

@@ -11,7 +11,7 @@ namespace IbnAlZumar.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,STORE_OWNER")]
+    [Authorize]
 
     public class AiController : ControllerBase
     {
@@ -25,7 +25,7 @@ namespace IbnAlZumar.API.Controllers
         private static readonly HashSet<string> AllowedMimeTypes = new(StringComparer.OrdinalIgnoreCase)
         {
             "image/jpeg", "image/jpg", "image/png", "image/webp",
-            "application/pdf",
+            "application/pdf", "text/plain",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",       // .xlsx
             "application/vnd.ms-excel"                                                  // .xls
@@ -61,7 +61,7 @@ namespace IbnAlZumar.API.Controllers
             [FromForm] List<IFormFile>? files,
             CancellationToken ct)
         {
-            if (string.IsNullOrWhiteSpace(prompt))
+            if (string.IsNullOrWhiteSpace(prompt) && (files == null || files.Count == 0))
             {
                 return BadRequest(new { message = "الرسالة فارغة." });
             }
@@ -111,7 +111,7 @@ namespace IbnAlZumar.API.Controllers
                     {
                         return BadRequest(new
                         {
-                            message = $"صيغة الملف '{file.FileName}' غير مدعومة. الصيغ المسموحة: صور (JPG/PNG/WEBP)، PDF، Word (.docx)، Excel (.xlsx/.xls)."
+                            message = $"صيغة الملف '{file.FileName}' غير مدعومة. الصيغ المسموحة: صور (JPG/PNG/WEBP)، PDF، TXT، Word (.docx)، Excel (.xlsx/.xls)."
                         });
                     }
 
@@ -178,7 +178,7 @@ namespace IbnAlZumar.API.Controllers
             Response.Headers.CacheControl = "no-cache, no-transform";
             Response.Headers.Connection = "keep-alive";
 
-            if (string.IsNullOrWhiteSpace(prompt))
+            if (string.IsNullOrWhiteSpace(prompt) && (files == null || files.Count == 0))
             {
                 Response.StatusCode = StatusCodes.Status400BadRequest;
                 await Response.WriteAsJsonAsync(new { message = "الرسالة فارغة." }, ct);

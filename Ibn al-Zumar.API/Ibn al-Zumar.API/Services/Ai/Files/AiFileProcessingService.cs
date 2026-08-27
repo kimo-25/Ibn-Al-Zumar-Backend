@@ -17,6 +17,8 @@ namespace IbnAlZumar.API.Ai.Files
         private const string DocxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         private const string XlsxMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         private const string XlsMimeType = "application/vnd.ms-excel";
+        private static readonly HashSet<string> PlainTextMimeTypes = new(StringComparer.OrdinalIgnoreCase)
+        { "text/plain", "text/csv" };
 
         private readonly ILogger<AiFileProcessingService> _logger;
 
@@ -29,31 +31,53 @@ namespace IbnAlZumar.API.Ai.Files
             ImageAndPdfMimeTypes.Contains(mimeType) ||
             string.Equals(mimeType, DocxMimeType, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(mimeType, XlsxMimeType, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(mimeType, XlsMimeType, StringComparison.OrdinalIgnoreCase);
+            string.Equals(mimeType, XlsMimeType, StringComparison.OrdinalIgnoreCase) ||
+            PlainTextMimeTypes.Contains(mimeType);
 
         public Task<GeminiPart> BuildGeminiPartAsync(AiChatAttachmentDto attachment, CancellationToken ct)
         {
-            if (ImageAndPdfMimeTypes.Contains(attachment.MimeType))
+            var mimeType = attachment?.MimeType ?? string.Empty;
+            var fileName = attachment?.FileName ?? "attachment";
+            var base64Data = attachment?.Base64Data ?? string.Empty;
+
+            if (ImageAndPdfMimeTypes.Contains(mimeType))
             {
                 // Native multimodal path — Gemini reads pixels/PDF pages directly.
-                return Task.FromResult(GeminiPart.FromInlineData(attachment.MimeType, attachment.Base64Data));
+                return Task.FromResult(GeminiPart.FromInlineData(mimeType, base64Data));
             }
 
-            if (string.Equals(attachment.MimeType, DocxMimeType, StringComparison.OrdinalIgnoreCase))
+            if (PlainTextMimeTypes.Contains(mimeType))
+            {
+                var text = ExtractPlainText(base64Data);
+                return Task.FromResult(GeminiPart.FromText(WrapExtractedText(fileName, text)));
+            }
+
+            if (string.Equals(mimeType, DocxMimeType, StringComparison.OrdinalIgnoreCase))
             {
                 var text = ExtractDocxText(attachment);
-                return Task.FromResult(GeminiPart.FromText(WrapExtractedText(attachment.FileName, text)));
+                return Task.FromResult(GeminiPart.FromText(WrapExtractedText(fileName, text)));
             }
 
             if (string.Equals(attachment.MimeType, XlsxMimeType, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(attachment.MimeType, XlsMimeType, StringComparison.OrdinalIgnoreCase))
             {
                 var text = ExtractXlsxText(attachment);
-                return Task.FromResult(GeminiPart.FromText(WrapExtractedText(attachment.FileName, text)));
+                return Task.FromResult(GeminiPart.FromText(WrapExtractedText(fileName, text)));
             }
 
             _logger.LogWarning("AiFileProcessingService: unsupported attachment mime type '{Mime}'", attachment.MimeType);
-            return Task.FromResult(GeminiPart.FromText($"[تنبيه: تعذر قراءة الملف المرفق '{attachment.FileName}' لأن صيغته غير مدعومة.]"));
+            return Task.FromResult(GeminiPart.FromText($"[تنبيه: تعذر قراءة الملف المرفق '{fileName}' لأن صيغته غير مدعومة.]"));
+        }
+
+        private static string ExtractPlainText(string base64Data)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(base64Data)) return string.Empty;
+                var bytes = Convert.FromBase64String(base64Data);
+                return System.Text.Encoding.UTF8.GetString(bytes);
+            }
+            catch { return string.Empty; }
         }
 
         private static string WrapExtractedText(string fileName, string extractedText)

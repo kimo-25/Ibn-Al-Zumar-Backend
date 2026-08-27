@@ -181,7 +181,7 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler
 builder.Services.AddAuthorization();
 
 // ---------------------------------------------------------------------------
-// CORS Policy
+// CORS Policy Configuration
 // ---------------------------------------------------------------------------
 const string CorsPolicyName = "PosFrontend";
 
@@ -189,7 +189,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicyName, policy =>
     {
-        policy.WithOrigins("<https://kimo-25.github.io>")
+        policy.WithOrigins(
+                    "https://kimo-25.github.io",
+                    "https://kimo-25.github.io/",
+                    "http://localhost:5173",
+                    "http://localhost:3000"
+              )
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -297,6 +302,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseRouting();
 
+// UseCors يجب أن يوضع مباشرة بعد UseRouting وقبل UseAuthentication
 app.UseCors(CorsPolicyName);
 
 app.UseAuthentication();
