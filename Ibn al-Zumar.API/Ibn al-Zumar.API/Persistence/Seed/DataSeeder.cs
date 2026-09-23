@@ -84,7 +84,7 @@ public static class DataSeeder
         await SeedRemindersFromCsvAsync(context, logger);
     }
 
-    private static async Task SeedPermissionsAsync(ApplicationDbContext context, ILogger logger)
+    public static async Task SeedPermissionsAsync(ApplicationDbContext context, ILogger logger)
     {
         var existingCodes = (await context.Permissions.Select(p => p.Code).ToListAsync())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -101,7 +101,7 @@ public static class DataSeeder
         logger.LogInformation("Seeded {Count} permissions", missing.Count);
     }
 
-    private static async Task SeedRolesAsync(ApplicationDbContext context, ILogger logger)
+    public static async Task SeedRolesAsync(ApplicationDbContext context, ILogger logger)
     {
         var requiredRoles = new[] { "Owner", "Admin", "Moderator", "Cashier" };
         var existingRoles = (await context.Roles.Select(r => r.Name).ToListAsync())
@@ -130,7 +130,7 @@ public static class DataSeeder
         logger.LogInformation("Seeded {Count} roles", missing.Count);
     }
 
-    private static async Task SeedRolePermissionsAsync(ApplicationDbContext context, ILogger logger)
+    public static async Task SeedRolePermissionsAsync(ApplicationDbContext context, ILogger logger)
     {
         var ownerRole = await context.Roles.FirstAsync(r => r.Name == "Owner");
         var adminRole = await context.Roles.FirstAsync(r => r.Name == "Admin");
@@ -201,7 +201,7 @@ public static class DataSeeder
         logger.LogInformation("Mapped permissions to roles successfully.");
     }
 
-    private static async Task SeedSuperAdminAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
+    public static async Task SeedSuperAdminAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
     {
         const string defaultUsername = "admin";
         const string defaultPassword = "Admin@123456";
@@ -227,7 +227,7 @@ public static class DataSeeder
         logger.LogWarning("Seeded default Super Admin account.");
     }
 
-    private static async Task SeedModeratorUserAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
+    public static async Task SeedModeratorUserAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
     {
         const string username = "Kamal";
         const string password = "Kamal2004!!";
@@ -255,35 +255,37 @@ public static class DataSeeder
 
     // --- Data Seeding Methods for Catalog & Reminders ---
 
-    private static async Task SeedBrandsAsync(ApplicationDbContext context, ILogger logger)
+    public static async Task SeedBrandsAsync(ApplicationDbContext context, ILogger logger)
     {
         if (await context.Brands.AnyAsync()) return;
 
-        context.Brands.Add(new Brand
+        // لا نستخدم SET IDENTITY_INSERT — نترك SQL Server يولّد الـ Id تلقائياً عبر EF Core
+        var brand = new Brand
         {
-            Id = 1,
             Name = "JADEVER",
             LogoUrl = null,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             IsDeleted = false
-        });
+        };
 
+        context.Brands.Add(brand);
         await context.SaveChangesAsync();
-        logger.LogInformation("Seeded Brands successfully.");
+        logger.LogInformation("Seeded Brand {BrandId} successfully.", brand.Id);
     }
 
-    private static async Task SeedCategoriesAsync(ApplicationDbContext context, ILogger logger)
+    public static async Task SeedCategoriesAsync(ApplicationDbContext context, ILogger logger)
     {
         if (await context.Categories.AnyAsync()) return;
 
-        context.Categories.AddRange(
+        // لا نستخدم SET IDENTITY_INSERT — نترك SQL Server يولّد الـ Id تلقائياً عبر EF Core
+        var categories = new[]
+        {
             new Category
             {
-                Id = 1,
                 Name = "الأدوات والأجهزة",
                 NameAr = "الأدوات والأجهزة",
-                Slug = "الأدوات-والأجهزة",
+                Slug = "الادوات-والاجهزة",
                 ParentCategoryId = null,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -291,25 +293,23 @@ public static class DataSeeder
             },
             new Category
             {
-                Id = 2,
                 Name = "أدوات الديكور",
                 NameAr = "أدوات الديكور",
-                Slug = "أدوات-الديكور",
+                Slug = "ادوات-الديكور",
                 ParentCategoryId = null,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 IsDeleted = false
             }
-        );
+        };
 
+        context.Categories.AddRange(categories);
         await context.SaveChangesAsync();
         logger.LogInformation("Seeded Categories successfully.");
     }
 
-    private static async Task SeedProductsFromCsvAsync(ApplicationDbContext context, ILogger logger)
+    public static async Task SeedProductsFromCsvAsync(ApplicationDbContext context, ILogger logger)
     {
-        if (await context.Products.AnyAsync()) return;
-
         var path = GetFilePath("Products.csv");
         if (!File.Exists(path))
         {
@@ -320,20 +320,41 @@ public static class DataSeeder
         var lines = await File.ReadAllLinesAsync(path);
         if (lines.Length <= 1) return;
 
+        // --- حماية من تكرار SKU: تحميل كل SKU الموجودة مسبقاً في قاعدة البيانات ---
+        var existingSkus = (await context.Products.Select(p => p.SKU).ToListAsync())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // --- تحديد Brand/Category صالحين ديناميكياً (بدون أي SET IDENTITY_INSERT أو Id ثابت) ---
+        var brandId = await context.Brands.AsNoTracking().Select(b => b.Id).FirstOrDefaultAsync();
+        var categoryIds = await context.Categories.AsNoTracking().Select(c => c.Id).ToListAsync();
+        var defaultCategoryId = categoryIds.FirstOrDefault();
+
+        // --- مجموعة تتبع الـ SKU المضافة في هذه الجلسة لمنع التكرار داخل ملف CSV نفسه ---
+        var seenSkus = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var duplicatesFixed = 0;
+
         var products = new List<Product>();
         foreach (var line in lines.Skip(1))
         {
             if (string.IsNullOrWhiteSpace(line)) continue;
 
-            // Handling CSV tab/comma separation safely
-            var parts = line.Split('\t').Length > 1 ? line.Split('\t') : line.Split(',');
+            // Handling CSV separator safely (semicolon / tab / comma — whichever yields most columns)
+            var candidates = new[] { line.Split(';'), line.Split('\t'), line.Split(',') };
+            var parts = candidates.OrderByDescending(p => p.Length).First();
             if (parts.Length < 6) continue;
 
             try
             {
+                // توليد SKU فريد: إذا كان مكرراً داخل الملف أو موجوداً في قاعدة البيانات
+                // نضيف suffix عشوائي قصير بدلاً من رفض الصف أو كسر الـ Unique Index.
+                var rawSku = GetValue(parts, 1) ?? Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+                var sku = EnsureUniqueSku(rawSku, existingSkus, seenSkus);
+                if (!string.Equals(sku, rawSku, StringComparison.OrdinalIgnoreCase))
+                    duplicatesFixed++;
+
                 var product = new Product
                 {
-                    SKU = GetValue(parts, 1) ?? Guid.NewGuid().ToString()[..8].ToUpper(),
+                    SKU = sku,
                     Name = GetValue(parts, 3) ?? "Product",
                     NameAr = GetValue(parts, 4),
                     Description = GetValue(parts, 5),
@@ -342,12 +363,13 @@ public static class DataSeeder
                     QuantityPerCarton = parseInt(GetValue(parts, 8), 1),
                     IsActive = parseBool(GetValue(parts, 9)),
                     TrackInventory = parseBool(GetValue(parts, 10)),
-                    CategoryId = parseInt(GetValue(parts, 11), 1),
-                    BrandId = 1, // ربط المنتج بـ Brand رقم 1 لتجنب مشكلة الـ Foreign Key Constraint
+                    CategoryId = defaultCategoryId, // فئة افتراضية صالحة لتجنب أخطاء Foreign Key
+                    BrandId = brandId,              // ربط المنتج بأول Brand موجود لتجنب مشكلة FK Constraint
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     IsDeleted = false
                 };
+
                 products.Add(product);
             }
             catch (Exception ex)
@@ -358,13 +380,40 @@ public static class DataSeeder
 
         if (products.Count > 0)
         {
+            // لا نستخدم أي SET IDENTITY_INSERT — SQL Server يولّد الـ Id تلقائياً عبر EF Core
             await context.Products.AddRangeAsync(products);
             await context.SaveChangesAsync();
-            logger.LogInformation("Successfully seeded {Count} products into PostgreSQL.", products.Count);
+            logger.LogInformation(
+                "Successfully seeded {Count} products from Products.csv ({DuplicatesFixed} duplicate SKUs auto-renamed).",
+                products.Count, duplicatesFixed);
+        }
+        else
+        {
+            logger.LogWarning("No valid product rows were parsed from Products.csv.");
         }
     }
 
-    private static async Task SeedRemindersFromCsvAsync(ApplicationDbContext context, ILogger logger)
+    /// <summary>
+    /// يعيد SKU فريداً: إذا كان مكرراً داخل الملف أو موجوداً في قاعدة البيانات
+    /// يضاف suffix عشوائي قصير حتى يصبح فريداً (مع احترام حد 50 حرفاً).
+    /// </summary>
+    private static string EnsureUniqueSku(string sku, HashSet<string> existingSkus, HashSet<string> seenSkus)
+    {
+        var candidate = sku;
+        while (existingSkus.Contains(candidate) || seenSkus.Contains(candidate))
+        {
+            var suffix = "-" + Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+            // SKU طولها الأقصى 50 حرفاً (HasMaxLength(50) في ProductConfiguration)
+            var maxBase = Math.Max(0, 50 - suffix.Length);
+            var baseSku = candidate.Length > maxBase ? candidate[..maxBase] : sku.Length > maxBase ? sku[..maxBase] : sku;
+            candidate = baseSku + suffix;
+        }
+        existingSkus.Add(candidate);
+        seenSkus.Add(candidate);
+        return candidate;
+    }
+
+    public static async Task SeedRemindersFromCsvAsync(ApplicationDbContext context, ILogger logger)
     {
         if (!await context.Set<Reminder>().AnyAsync())
         {

@@ -179,7 +179,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicyName, policy =>
     {
-        policy.WithOrigins("https://kimo-25.github.io")
+        // سياسة مرنة: تسمح بأي Origin فارغ (طلبات same-origin/curl) + GitHub Pages بجميع مساراته
+        // + أي منفذ محلي على localhost (Vite 5173، CRA 3000، ...إلخ) لتجنب أخطاء CORS
+        // عند التنقل بين Routes والـ Subpaths.
+        policy.SetIsOriginAllowed(origin => string.IsNullOrEmpty(origin)
+                       || origin.StartsWith("https://kimo-25.github.io")
+                       || origin.StartsWith("http://localhost"))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
