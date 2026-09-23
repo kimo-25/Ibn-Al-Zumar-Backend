@@ -79,7 +79,7 @@ public class ApplicationDbContext : DbContext
     {
         base.ConfigureConventions(configurationBuilder);
 
-        // ��� ����� ������� ����� ���� decimal ����� ��������� ���� �������
+        //                              decimal                             
         configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
     }
 
@@ -117,6 +117,12 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<AttendanceLog>()
             .HasIndex(a => new { a.UserId, a.CheckInTime });
+
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.VoiceEnrolledByUser)
+            .WithMany()
+            .HasForeignKey(u => u.VoiceEnrolledByUserId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<PayrollRecord>()
             .HasOne(p => p.User)
@@ -170,7 +176,7 @@ public class ApplicationDbContext : DbContext
 
         ApplyGlobalSoftDeleteFilter(modelBuilder);
 
-        // �� ����� EF Core 10622 ����� �������� �������� �������� �� Joint Tables
+        //          EF Core 10622                                     Joint Tables
         modelBuilder.Entity<RolePermission>()
             .HasQueryFilter(rp => !rp.Permission.IsDeleted);
 

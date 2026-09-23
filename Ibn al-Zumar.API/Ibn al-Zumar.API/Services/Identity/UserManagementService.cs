@@ -172,4 +172,13 @@ public class UserManagementService : IUserManagementService
     {
         return await _context.Permissions.Select(p => p.Name).ToListAsync();
     }
+
+    public async Task UpdateHourlyRateAsync(int userId, decimal hourlyRate)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null) throw new NotFoundException($"المستخدم رقم {userId} غير موجود");
+
+        user.HourlyRate = hourlyRate;
+        await _context.SaveChangesAsync();
+    }
 }

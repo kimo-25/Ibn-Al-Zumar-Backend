@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+ï»¿using System.ComponentModel.DataAnnotations;
 using IbnAlZumar.Domain.Common;
 using IbnAlZumar.Domain.Entities.Attendance;
 
@@ -22,7 +22,7 @@ public class User : BaseEntity
 
     public DateTime? LastLoginAt { get; set; }
 
-    // --- ÎÇÕÉ ÈÊİÚíá ÇáÈÑíÏ ÇáÅáßÊÑæäí ÚäÏ ÅäÔÇÁ ÇáÍÓÇÈ ---
+    // --- Ø®Ø§ØµØ© Ø¨ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ Ø¹Ù†Ø¯ Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø­Ø³Ø§Ø¨ ---
     public bool IsEmailVerified { get; set; } = false;
 
     [MaxLength(10)]
@@ -35,7 +35,7 @@ public class User : BaseEntity
 
     public DateTime? PasswordResetExpiry { get; set; }
 
-    // --- ÊÛííÑ ÇáÈÑíÏ ÇáÅáßÊÑæäí ÚÈÑ OTP ---
+    // --- ØªØºÙŠÙŠØ± Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ Ø¹Ø¨Ø± OTP ---
     [MaxLength(150)]
     public string? PendingEmail { get; set; }
 
@@ -44,7 +44,7 @@ public class User : BaseEntity
 
     public DateTime? PendingEmailExpiry { get; set; }
 
-    // --- ÎÇÕÉ ÈÑŞã ÇáåÇÊİ æÇáÊÍŞŞ ÚÈÑ OTP (ÊİÚíá áÇÍŞ ÇÎÊíÇÑí) ---
+    // --- Ø®Ø§ØµØ© Ø¨Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ø¹Ø¨Ø± OTP (ØªÙØ¹ÙŠÙ„ Ù„Ø§Ø­Ù‚ Ø§Ø®ØªÙŠØ§Ø±ÙŠ) ---
     public bool IsPhoneVerified { get; set; } = false;
 
     [MaxLength(20)]
@@ -55,18 +55,22 @@ public class User : BaseEntity
 
     public DateTime? PendingPhoneExpiry { get; set; }
 
-    // --- ÎÇÕÉ ÈÊÓÌíá ÇáÏÎæá ÚÈÑ ãÒæÏíä ÎÇÑÌííä ãËá Google ---
+    // --- Ø®Ø§ØµØ© Ø¨ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø¹Ø¨Ø± Ù…Ø²ÙˆØ¯ÙŠÙ† Ø®Ø§Ø±Ø¬ÙŠÙŠÙ† Ù…Ø«Ù„ Google ---
     public bool HasPassword => !string.IsNullOrEmpty(PasswordHash);
 
-    // --- ÇáÍÖæÑ æÇáÇäÕÑÇİ æÇáÑæÇÊÈ (Voice Biometric Attendance) ---
-    [Range(0, double.MaxValue, ErrorMessage = "ÃÌÑ ÇáÓÇÚÉ íÌÈ Ãä íßæä ÑŞãÇğ ãæÌÈÇğ.")]
+    // --- Ø§Ù„Ø­Ø¶ÙˆØ± ÙˆØ§Ù„Ø§Ù†ØµØ±Ø§Ù ÙˆØ§Ù„Ø±ÙˆØ§ØªØ¨ (Voice Biometric Attendance) ---
+    [Range(0, double.MaxValue, ErrorMessage = "Ø£Ø¬Ø± Ø§Ù„Ø³Ø§Ø¹Ø© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø±Ù‚Ù…Ø§Ù‹ Ù…ÙˆØ¬Ø¨Ø§Ù‹.")]
     public decimal HourlyRate { get; set; }
 
     /// <summary>
-    /// ÇáÈÕãÉ ÇáÕæÊíÉ ááãæÙİ (Voice Embedding) ãÎÒäÉ ßÜ JSON Array ãä ÇáÃÑŞÇã
-    /// ßãÇ íÊã ÇÓÊÑÌÇÚåÇ ãä Hugging Face Inference API áãæÏíá speechbrain/spkrec-ecapa-voxceleb.
+    /// Ø§Ù„Ø¨ØµÙ…Ø© Ø§Ù„ØµÙˆØªÙŠØ© Ù„Ù„Ù…ÙˆØ¸Ù (Voice Embedding) Ù…Ø®Ø²Ù†Ø© ÙƒÙ€ JSON Array Ù…Ù† Ø§Ù„Ø£Ø±Ù‚Ø§Ù…
+    /// ÙƒÙ…Ø§ ÙŠØªÙ… Ø§Ø³ØªØ±Ø¬Ø§Ø¹Ù‡Ø§ Ù…Ù† Hugging Face Inference API Ù„Ù…ÙˆØ¯ÙŠÙ„ speechbrain/spkrec-ecapa-voxceleb.
     /// </summary>
     public string? VoiceEmbedding { get; set; }
+
+    public DateTime? VoiceEnrolledAtUtc { get; set; }
+    public int? VoiceEnrolledByUserId { get; set; }
+    public User? VoiceEnrolledByUser { get; set; }
 
     public ICollection<AttendanceLog> AttendanceLogs { get; set; } = new List<AttendanceLog>();
     public ICollection<PayrollRecord> PayrollRecords { get; set; } = new List<PayrollRecord>();

@@ -49,7 +49,6 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Configurations\" />
-    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\uploads\products\" />
   </ItemGroup>
   <ItemGroup>

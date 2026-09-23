@@ -23,20 +23,31 @@ public class AttendanceController : ControllerBase
     /// </summary>
     [HttpPost("enroll-voice")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> EnrollVoice(IFormFile audio)
+    public async Task<IActionResult> EnrollVoice(IFormFile audio, [FromForm] int? userId, CancellationToken cancellationToken)
     {
         if (audio == null || audio.Length == 0)
         {
             return BadRequest(new { message = "الرجاء إرفاق تسجيل صوتي." });
         }
 
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(userIdClaim, out var userId))
+        var currentUserClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(currentUserClaim, out var currentUserId))
         {
             return Unauthorized(new { message = "تعذر تحديد هوية المستخدم الحالي." });
         }
 
-        var result = await _attendanceService.EnrollVoiceAsync(userId, audio);
+        var isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin") || User.IsInRole("STORE_OWNER");
+        var targetUserId = userId ?? currentUserId;
+        if (userId.HasValue && userId.Value != currentUserId && !isAdmin)
+        {
+            return Forbid();
+        }
+
+        var result = await _attendanceService.EnrollVoiceAsync(
+            targetUserId,
+            audio,
+            userId.HasValue && userId.Value != currentUserId ? currentUserId : null,
+            cancellationToken);
         if (!result.Success)
         {
             return BadRequest(result);
@@ -50,19 +61,15 @@ public class AttendanceController : ControllerBase
     /// </summary>
     [HttpPost("voice-check")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> VoiceCheck(IFormFile audio, [FromForm] string? notes)
+    public async Task<IActionResult> VoiceCheck(IFormFile audio, [FromForm] string? notes, CancellationToken cancellationToken)
     {
         if (audio == null || audio.Length == 0)
         {
             return BadRequest(new { message = "الرجاء إرفاق تسجيل صوتي." });
         }
 
-        var result = await _attendanceService.ProcessVoiceAttendanceAsync(audio, notes);
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
+        var result = await _attendanceService.ProcessVoiceAttendanceAsync(audio, notes, cancellationToken);
+        // عدم التعرف على المتحدث نتيجة أعمال متوقعة؛ يعاد العقد نفسه ليستطيع العميل عرض الرسالة.
         return Ok(result);
     }
 

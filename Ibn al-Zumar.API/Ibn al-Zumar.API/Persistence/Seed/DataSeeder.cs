@@ -261,7 +261,6 @@ public static class DataSeeder
 
         context.Brands.Add(new Brand
         {
-            Id = 1,
             Name = "JADEVER",
             LogoUrl = null,
             CreatedAt = DateTime.UtcNow,
@@ -280,7 +279,6 @@ public static class DataSeeder
         context.Categories.AddRange(
             new Category
             {
-                Id = 1,
                 Name = "الأدوات والأجهزة",
                 NameAr = "الأدوات والأجهزة",
                 Slug = "الأدوات-والأجهزة",
@@ -291,7 +289,6 @@ public static class DataSeeder
             },
             new Category
             {
-                Id = 2,
                 Name = "أدوات الديكور",
                 NameAr = "أدوات الديكور",
                 Slug = "أدوات-الديكور",
@@ -320,20 +317,41 @@ public static class DataSeeder
         var lines = await File.ReadAllLinesAsync(path);
         if (lines.Length <= 1) return;
 
+        var defaultBrand = await context.Brands.FirstOrDefaultAsync();
+        var defaultCategory = await context.Categories.FirstOrDefaultAsync();
+
+        if (defaultBrand == null || defaultCategory == null)
+        {
+            logger.LogWarning("Cannot seed products: Brands or Categories are missing.");
+            return;
+        }
+
         var products = new List<Product>();
+        var existingSkus = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var line in lines.Skip(1))
         {
             if (string.IsNullOrWhiteSpace(line)) continue;
 
-            // Handling CSV tab/comma separation safely
             var parts = line.Split('\t').Length > 1 ? line.Split('\t') : line.Split(',');
             if (parts.Length < 6) continue;
 
             try
             {
+                var rawSku = GetValue(parts, 1);
+                var sku = !string.IsNullOrWhiteSpace(rawSku) ? rawSku : Guid.NewGuid().ToString()[..8].ToUpper();
+
+                // فحص وتجنب تكرار الـ SKU
+                if (existingSkus.Contains(sku))
+                {
+                    sku = $"{sku}-{Guid.NewGuid().ToString()[..4].ToUpper()}";
+                }
+
+                existingSkus.Add(sku);
+
                 var product = new Product
                 {
-                    SKU = GetValue(parts, 1) ?? Guid.NewGuid().ToString()[..8].ToUpper(),
+                    SKU = sku,
                     Name = GetValue(parts, 3) ?? "Product",
                     NameAr = GetValue(parts, 4),
                     Description = GetValue(parts, 5),
@@ -342,8 +360,8 @@ public static class DataSeeder
                     QuantityPerCarton = parseInt(GetValue(parts, 8), 1),
                     IsActive = parseBool(GetValue(parts, 9)),
                     TrackInventory = parseBool(GetValue(parts, 10)),
-                    CategoryId = parseInt(GetValue(parts, 11), 1),
-                    BrandId = 1, // ربط المنتج بـ Brand رقم 1 لتجنب مشكلة الـ Foreign Key Constraint
+                    CategoryId = defaultCategory.Id,
+                    BrandId = defaultBrand.Id,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     IsDeleted = false
@@ -360,7 +378,7 @@ public static class DataSeeder
         {
             await context.Products.AddRangeAsync(products);
             await context.SaveChangesAsync();
-            logger.LogInformation("Successfully seeded {Count} products into PostgreSQL.", products.Count);
+            logger.LogInformation("Successfully seeded {Count} products into SQL Server.", products.Count);
         }
     }
 

@@ -382,7 +382,7 @@ namespace IbnAlZumar.API.Services.Ai
 
         private async Task<(int Id, string Name, decimal Price)?> FindBestProductMatchAsync(string rawName, CancellationToken ct)
         {
-            var target = rawName.Trim();
+            var target = NormalizeArabicText(rawName);
             if (string.IsNullOrWhiteSpace(target)) return null;
 
             var candidates = await _context.Products
@@ -401,35 +401,60 @@ namespace IbnAlZumar.API.Services.Ai
                 {
                     if (string.IsNullOrWhiteSpace(candidateName)) continue;
 
-                    var score = SimilarityScore(target, candidateName);
+                    var score = SimilarityScore(target, NormalizeArabicText(candidateName));
                     if (best == null || score > best.Value.Score)
                     {
-                        best = (c.Id, candidateName, c.SellingPrice, score);
+                        best = (c.Id, c.Name, c.SellingPrice, score);
                     }
                 }
             }
 
-            // عتبة تشابه دنيا 0.35 - عدّلها حسب دقة النتائج الفعلية عندك
-            if (best == null || best.Value.Score < 0.35) return null;
+            // نرفض المطابقات الضعيفة فقط؛ التطبيع أعلاه يعالج اختلافات النطق والكتابة الشائعة.
+            if (best == null || best.Value.Score < 0.48) return null;
 
             return (best.Value.Id, best.Value.Name, best.Value.Price);
         }
 
         private static double SimilarityScore(string a, string b)
         {
-            a = a.Trim();
-            b = b.Trim();
+            a = NormalizeArabicText(a);
+            b = NormalizeArabicText(b);
             if (a.Length == 0 || b.Length == 0) return 0;
 
+            if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase)) return 1.0;
             if (b.Contains(a, StringComparison.OrdinalIgnoreCase) ||
                 a.Contains(b, StringComparison.OrdinalIgnoreCase))
             {
-                return 0.9;
+                return 0.92;
             }
 
             var distance = LevenshteinDistance(a, b);
             var maxLen = Math.Max(a.Length, b.Length);
-            return 1.0 - (double)distance / maxLen;
+            var characterScore = 1.0 - (double)distance / maxLen;
+            var targetTokens = a.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var candidateTokens = b.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var sharedTokens = targetTokens.Intersect(candidateTokens, StringComparer.OrdinalIgnoreCase).Count();
+            var tokenScore = targetTokens.Length == 0 ? 0 : (double)sharedTokens / targetTokens.Length;
+            return Math.Max(characterScore, 0.65 * characterScore + 0.35 * tokenScore);
+        }
+
+        private static string NormalizeArabicText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+
+            var normalized = value.Trim().ToLowerInvariant()
+                .Replace('أ', 'ا').Replace('إ', 'ا').Replace('آ', 'ا')
+                .Replace('ى', 'ي').Replace('ة', 'ه').Replace('ؤ', 'و').Replace('ئ', 'ي')
+                .Replace('٠', '0').Replace('١', '1').Replace('٢', '2').Replace('٣', '3')
+                .Replace('٤', '4').Replace('٥', '5').Replace('٦', '6').Replace('٧', '7')
+                .Replace('٨', '8').Replace('٩', '9');
+
+            normalized = Regex.Replace(normalized, "[ًٌٍَُِّْـ]", string.Empty);
+            normalized = Regex.Replace(normalized, "[^\\p{L}\\p{N}]+", " ");
+            normalized = Regex.Replace(normalized, "\\s+", " ").Trim();
+            if (normalized.StartsWith("ال ", StringComparison.Ordinal)) normalized = normalized[3..];
+            else if (normalized.StartsWith("ال", StringComparison.Ordinal) && normalized.Length > 2) normalized = normalized[2..];
+            return normalized;
         }
 
         private static int LevenshteinDistance(string s, string t)

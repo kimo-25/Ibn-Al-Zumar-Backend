@@ -4,24 +4,27 @@ using IbnAlZumar.API.Persistence;
 using IbnAlZumar.Domain.Entities.Attendance;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace IbnAlZumar.API.Services.Attendance;
 
 public class AttendanceService : IAttendanceService
 {
-    // A permissive threshold accommodates normal microphone, pitch, and ambient-noise variation.
-    private const double MatchThreshold = 0.30;
+    private const double MatchThreshold = 0.65;
+    private const double MinMatchThreshold = 0.55;
 
     private readonly ApplicationDbContext _db;
     private readonly IVoiceVerificationService _voiceService;
+    private readonly ILogger<AttendanceService> _logger;
 
-    public AttendanceService(ApplicationDbContext db, IVoiceVerificationService voiceService)
+    public AttendanceService(ApplicationDbContext db, IVoiceVerificationService voiceService, ILogger<AttendanceService> logger)
     {
         _db = db;
         _voiceService = voiceService;
+        _logger = logger;
     }
 
-    public async Task<VoiceEnrollResultDto> EnrollVoiceAsync(int userId, IFormFile audioFile, CancellationToken cancellationToken = default)
+    public async Task<VoiceEnrollResultDto> EnrollVoiceAsync(int userId, IFormFile audioFile, int? enrolledByUserId = null, CancellationToken cancellationToken = default)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         if (user == null)
@@ -49,6 +52,8 @@ public class AttendanceService : IAttendanceService
         }
 
         user.VoiceEmbedding = JsonSerializer.Serialize(embedding);
+        user.VoiceEnrolledAtUtc = DateTime.UtcNow;
+        user.VoiceEnrolledByUserId = enrolledByUserId;
         await _db.SaveChangesAsync(cancellationToken);
 
         return new VoiceEnrollResultDto
@@ -97,8 +102,15 @@ public class AttendanceService : IAttendanceService
             }
         }
 
+        _logger.LogDebug("Voice attendance best match: UserId={UserId}, Score={Score:0.000}, Candidates={CandidateCount}", bestUserId, bestScore, enrolledUsers.Count);
+
         if (bestUserId == null || bestScore < MatchThreshold)
         {
+            if (bestUserId != null && bestScore >= MinMatchThreshold)
+            {
+                _logger.LogWarning("Voice match is in the gray zone: UserId={UserId}, Score={Score:0.000}, Required={Required:0.000}", bestUserId, bestScore, MatchThreshold);
+            }
+
             return new AttendanceCheckResultDto
             {
                 Success = false,
@@ -126,7 +138,8 @@ public class AttendanceService : IAttendanceService
             {
                 UserId = matchedUser.Id,
                 CheckInTime = DateTime.UtcNow,
-                Status = AttendanceStatus.CheckedIn
+                Status = AttendanceStatus.CheckedIn,
+                VerificationMethod = AttendanceVerificationMethod.Voice
             };
 
             _db.AttendanceLogs.Add(newLog);
@@ -145,9 +158,11 @@ public class AttendanceService : IAttendanceService
         }
 
         var checkOutTime = DateTime.UtcNow;
-        var workedHours = Math.Round((checkOutTime - openLog.CheckInTime).TotalHours, 2);
+        var workedMinutes = Math.Max(0, (int)Math.Round((checkOutTime - openLog.CheckInTime).TotalMinutes, MidpointRounding.AwayFromZero));
+        var workedHours = Math.Round(workedMinutes / 60d, 2);
 
         openLog.CheckOutTime = checkOutTime;
+        openLog.WorkedMinutes = workedMinutes;
         openLog.WorkedHours = workedHours;
         openLog.Notes = notes;
         openLog.Status = !string.IsNullOrWhiteSpace(notes)
@@ -194,7 +209,9 @@ public class AttendanceService : IAttendanceService
                 CheckOutTime = a.CheckOutTime,
                 Status = a.Status.ToString(),
                 Notes = a.Notes,
-                WorkedHours = a.WorkedHours
+                WorkedHours = a.WorkedHours,
+                WorkedMinutes = a.WorkedMinutes,
+                VerificationMethod = a.VerificationMethod.ToString()
             })
             .ToListAsync(cancellationToken);
     }
@@ -207,7 +224,7 @@ public class AttendanceService : IAttendanceService
             .Include(a => a.User)
             .Where(a => a.CheckInTime >= startDate.Date
                         && a.CheckInTime < endExclusive
-                        && a.WorkedHours != null)
+                        && (a.WorkedMinutes != null || a.WorkedHours != null))
             .ToListAsync(cancellationToken);
 
         return logs
@@ -217,8 +234,8 @@ public class AttendanceService : IAttendanceService
                 UserId = group.Key.Id,
                 FullName = group.Key.FullName,
                 HourlyRate = group.Key.HourlyRate,
-                TotalHours = Math.Round(group.Sum(a => a.WorkedHours ?? 0), 2),
-                TotalSalary = Math.Round((decimal)group.Sum(a => a.WorkedHours ?? 0) * group.Key.HourlyRate, 2)
+                TotalHours = Math.Round(group.Sum(a => a.WorkedMinutes ?? (int)Math.Round((a.WorkedHours ?? 0d) * 60d, MidpointRounding.AwayFromZero)) / 60d, 2),
+                TotalSalary = Math.Round((decimal)group.Sum(a => a.WorkedMinutes ?? (int)Math.Round((a.WorkedHours ?? 0d) * 60d, MidpointRounding.AwayFromZero)) / 60m * group.Key.HourlyRate, 2)
             })
             .OrderBy(p => p.FullName)
             .ToList();

@@ -10,6 +10,12 @@ public enum AttendanceStatus
     LeftEarlyWithIssue = 3
 }
 
+public enum AttendanceVerificationMethod
+{
+    Voice = 1,
+    AdminManual = 2
+}
+
 public class AttendanceLog : BaseEntity
 {
     public int UserId { get; set; }
@@ -19,8 +25,10 @@ public class AttendanceLog : BaseEntity
     public DateTime? CheckOutTime { get; set; }
 
     public AttendanceStatus Status { get; set; } = AttendanceStatus.CheckedIn;
+    public AttendanceVerificationMethod VerificationMethod { get; set; } = AttendanceVerificationMethod.Voice;
 
     public string? Notes { get; set; }
 
+    public int? WorkedMinutes { get; set; }
     public double? WorkedHours { get; set; }
 }

@@ -5,7 +5,7 @@ namespace IbnAlZumar.API.Services.Attendance;
 
 public interface IAttendanceService
 {
-    Task<VoiceEnrollResultDto> EnrollVoiceAsync(int userId, IFormFile audioFile, CancellationToken cancellationToken = default);
+    Task<VoiceEnrollResultDto> EnrollVoiceAsync(int userId, IFormFile audioFile, int? enrolledByUserId = null, CancellationToken cancellationToken = default);
 
     Task<AttendanceCheckResultDto> ProcessVoiceAttendanceAsync(IFormFile audioFile, string? notes, CancellationToken cancellationToken = default);
 

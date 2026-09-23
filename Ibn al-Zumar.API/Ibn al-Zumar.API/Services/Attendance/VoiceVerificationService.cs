@@ -27,6 +27,16 @@ public class VoiceVerificationService : IVoiceVerificationService
     private const double FrameDurationSeconds = 0.025; // 25ms
     private const double HopDurationSeconds = 0.010;   // 10ms
     private const double PreEmphasisCoefficient = 0.97;
+    private const int TargetSampleRate = 16000;
+    private const double MinAudioDurationSeconds = 0.5;
+    private const double MaxAudioDurationSeconds = 10.0;
+    private const double VadThreshold = 0.01;
+    private const double TargetAmplitude = 0.1;
+    private const double MelMeanScale = 10.0;
+    private const double MelStdScale = 3.0;
+    private const double EnergyScale = 0.1;
+    private const double ZcrScale = 0.5;
+    private const double PitchScale = 400.0;
 
     public Task<float[]> ExtractVoiceEmbeddingAsync(Stream audioStream, string fileName, CancellationToken cancellationToken = default)
     {
@@ -57,13 +67,20 @@ public class VoiceVerificationService : IVoiceVerificationService
                 return Array.Empty<float>();
             }
 
-            // نطلب على الأقل ~0.3 ثانية صوت حتى تكون الميزات ذات معنى
-            if (wav.Samples.Length < wav.SampleRate * 0.3)
+            if (wav.SampleRate <= 0 || wav.Samples.Length == 0)
             {
                 return Array.Empty<float>();
             }
 
-            return ExtractFeatures(wav.Samples, wav.SampleRate);
+            var samples = ResampleLinear(wav.Samples, wav.SampleRate, TargetSampleRate);
+            samples = PreprocessAudio(samples);
+            var durationSeconds = samples.Length / (double)TargetSampleRate;
+            if (durationSeconds < MinAudioDurationSeconds || durationSeconds > MaxAudioDurationSeconds)
+            {
+                return Array.Empty<float>();
+            }
+
+            return ExtractFeatures(samples, TargetSampleRate);
         }, cancellationToken);
     }
 
@@ -74,23 +91,15 @@ public class VoiceVerificationService : IVoiceVerificationService
             return 0d;
         }
 
-        double dotProduct = 0;
-        double magnitudeA = 0;
-        double magnitudeB = 0;
+        var magnitudeA = Math.Sqrt(vectorA.Sum(value => (double)value * value));
+        var magnitudeB = Math.Sqrt(vectorB.Sum(value => (double)value * value));
+        if (magnitudeA <= double.Epsilon || magnitudeB <= double.Epsilon) return 0d;
 
-        for (var i = 0; i < vectorA.Length; i++)
-        {
-            dotProduct += vectorA[i] * vectorB[i];
-            magnitudeA += vectorA[i] * vectorA[i];
-            magnitudeB += vectorB[i] * vectorB[i];
-        }
-
-        if (magnitudeA == 0 || magnitudeB == 0)
-        {
-            return 0d;
-        }
-
-        return dotProduct / (Math.Sqrt(magnitudeA) * Math.Sqrt(magnitudeB));
+        var unitA = vectorA.Select(value => value / (float)magnitudeA).ToArray();
+        var unitB = vectorB.Select(value => value / (float)magnitudeB).ToArray();
+        var unitDotProduct = 0d;
+        for (var i = 0; i < unitA.Length; i++) unitDotProduct += unitA[i] * unitB[i];
+        return Math.Max(0d, Math.Min(1d, (unitDotProduct + 1d) / 2d));
     }
 
     // =========================================================
@@ -305,13 +314,47 @@ public class VoiceVerificationService : IVoiceVerificationService
         var avgPitch = voicedPitches.Count > 0 ? voicedPitches.Average() : 0;
 
         var features = new List<float>(NumMelFilters * 2 + 3);
-        features.AddRange(meanMel.Select(v => (float)v));
-        features.AddRange(stdMel.Select(v => (float)v));
-        features.Add((float)avgFrameEnergy);
-        features.Add((float)avgZcr);
-        features.Add((float)avgPitch);
+        features.AddRange(meanMel.Select(v => (float)(v * MelMeanScale)));
+        features.AddRange(stdMel.Select(v => (float)(v * MelStdScale)));
+        features.Add((float)(avgFrameEnergy * EnergyScale));
+        features.Add((float)(avgZcr * ZcrScale));
+        features.Add((float)(avgPitch / PitchScale));
 
         return features.ToArray();
+    }
+
+    private static float[] ResampleLinear(float[] input, int sourceRate, int targetRate)
+    {
+        if (sourceRate == targetRate) return input;
+        var outputLength = Math.Max(1, (int)Math.Round(input.Length * targetRate / (double)sourceRate));
+        var output = new float[outputLength];
+        var ratio = sourceRate / (double)targetRate;
+        for (var i = 0; i < output.Length; i++)
+        {
+            var position = i * ratio;
+            var left = Math.Min(input.Length - 1, (int)Math.Floor(position));
+            var right = Math.Min(input.Length - 1, left + 1);
+            var fraction = position - left;
+            output[i] = (float)(input[left] + (input[right] - input[left]) * fraction);
+        }
+        return output;
+    }
+
+    private static float[] PreprocessAudio(float[] input)
+    {
+        if (input.Length == 0) return input;
+        var mean = input.Average(v => (double)v);
+        var centered = input.Select(v => (float)(v - mean)).ToArray();
+        var first = 0;
+        while (first < centered.Length && Math.Abs(centered[first]) < VadThreshold) first++;
+        var last = centered.Length - 1;
+        while (last >= first && Math.Abs(centered[last]) < VadThreshold) last--;
+        if (first > last) return Array.Empty<float>();
+        var trimmed = centered[first..(last + 1)];
+        var peak = trimmed.Max(v => Math.Abs((double)v));
+        if (peak <= 0) return Array.Empty<float>();
+        var gain = TargetAmplitude / peak;
+        return trimmed.Select(v => (float)(v * gain)).ToArray();
     }
 
     private static double ZeroCrossingRate(float[] frame)

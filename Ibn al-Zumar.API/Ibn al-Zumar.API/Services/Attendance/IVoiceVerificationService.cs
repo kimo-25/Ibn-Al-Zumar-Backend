@@ -1,15 +1,13 @@
 ﻿namespace IbnAlZumar.API.Services.Attendance;
 
+/// <summary>
+/// NOTE: This interface file was not part of the uploaded batch. Reconstructed here
+/// from usage in AttendanceService/VoiceVerificationService — signatures are unchanged
+/// from your existing interface, so this should be a no-op merge if your file matches.
+/// </summary>
 public interface IVoiceVerificationService
 {
-    /// <summary>
-    /// يحلل ملف صوتي محلياً (بدون أي اتصال بالإنترنت أو API خارجي) ويستخرج منه
-    /// متجه ميزات صوتية (Voice Embedding) ثابت الطول يمثّل بصمة صوت المتحدث.
-    /// </summary>
     Task<float[]> ExtractVoiceEmbeddingAsync(Stream audioStream, string fileName, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// يحسب نسبة التطابق بين متجهين باستخدام Cosine Similarity (القيمة بين 0 و 1).
-    /// </summary>
     double CalculateCosineSimilarity(float[] vectorA, float[] vectorB);
 }

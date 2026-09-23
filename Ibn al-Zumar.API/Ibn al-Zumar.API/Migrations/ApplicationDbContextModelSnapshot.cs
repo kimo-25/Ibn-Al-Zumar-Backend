@@ -113,8 +113,14 @@ namespace Ibn_alZumar.API.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("VerificationMethod")
+                        .HasColumnType("int");
+
                     b.Property<double?>("WorkedHours")
                         .HasColumnType("float");
+
+                    b.Property<int?>("WorkedMinutes")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -688,10 +694,18 @@ namespace Ibn_alZumar.API.Migrations
                     b.Property<string>("VoiceEmbedding")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("VoiceEnrolledAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("VoiceEnrolledByUserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Username")
                         .IsUnique();
+
+                    b.HasIndex("VoiceEnrolledByUserId");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -1863,6 +1877,16 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.User", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Identity.User", "VoiceEnrolledByUser")
+                        .WithMany()
+                        .HasForeignKey("VoiceEnrolledByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("VoiceEnrolledByUser");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.UserPermission", b =>

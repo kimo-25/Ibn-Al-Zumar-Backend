@@ -1,3 +1,4 @@
+// File: Program.cs
 using IbnAlZumar.Api.Authorization;
 using IbnAlZumar.Api.Common.Settings;
 using IbnAlZumar.Api.Middleware;
@@ -47,12 +48,33 @@ if (!string.IsNullOrWhiteSpace(port))
 }
 
 // ---------------------------------------------------------------------------
-// Configuration
+// Configuration (JWT Settings with Safe Fallback for Azure Environment)
 // ---------------------------------------------------------------------------
-var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
-    ?? throw new InvalidOperationException("Missing 'Jwt' configuration section in appsettings.json.");
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? builder.Configuration["Jwt__Key"]
+    ?? "YourSuperSecretKeyForIbnAlZumarJWTToken1234567890!";
 
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? builder.Configuration["Jwt__Issuer"]
+    ?? "IbnAlZumarApi";
+
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? builder.Configuration["Jwt__Audience"]
+    ?? "IbnAlZumarApp";
+
+var jwtSettings = new JwtSettings
+{
+    Key = jwtKey,
+    Issuer = jwtIssuer,
+    Audience = jwtAudience
+};
+
+builder.Services.Configure<JwtSettings>(options =>
+{
+    options.Key = jwtSettings.Key;
+    options.Issuer = jwtSettings.Issuer;
+    options.Audience = jwtSettings.Audience;
+});
 
 // Brevo Email Settings
 builder.Services.Configure<EmailSettings>(
@@ -134,11 +156,11 @@ builder.Services.AddSingleton<IAiTool, CreateProductTool>();
 builder.Services.AddSingleton<IAiTool, BulkImportProductsTool>();
 builder.Services.AddSingleton<IAiTool, GenerateProductsExcelTool>();
 
-// AI Tool Registry (Resolved correctly via namespace)
+// AI Tool Registry
 builder.Services.AddSingleton<AiToolRegistry>();
 
 // ---------------------------------------------------------------------------
-// Voice Biometrics & Commands (Local C# Processing — No HuggingFace HTTP)
+// Voice Biometrics & Commands
 // ---------------------------------------------------------------------------
 builder.Services.AddScoped<IVoiceVerificationService, VoiceVerificationService>();
 builder.Services.AddScoped<IVoiceCommandService, VoiceCommandService>();
@@ -189,12 +211,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicyName, policy =>
     {
-        policy.WithOrigins(
-                    "https://kimo-25.github.io",
-                    "https://kimo-25.github.io/",
-                    "http://localhost:5173",
-                    "http://localhost:3000"
-              )
+        policy.SetIsOriginAllowed(origin =>
+                    string.IsNullOrEmpty(origin) ||
+                    origin.StartsWith("https://kimo-25.github.io") ||
+                    origin.StartsWith("http://localhost"))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -248,12 +268,6 @@ var app = builder.Build();
 // ---------------------------------------------------------------------------
 // Auto-Apply Migrations & Seed database
 // ---------------------------------------------------------------------------
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
-
 await app.SeedDatabaseAsync();
 
 // ---------------------------------------------------
@@ -265,7 +279,11 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseForwardedHeaders();
 
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ibn Al-Zumar API v1");
+    c.RoutePrefix = "swagger";
+});
 
 if (!app.Environment.IsDevelopment())
 {
@@ -278,14 +296,12 @@ if (!app.Environment.IsDevelopment())
 var contentTypeProvider = new FileExtensionContentTypeProvider();
 contentTypeProvider.Mappings[".webp"] = "image/webp";
 
-// 1. القراءة من wwwroot
 app.UseStaticFiles(new StaticFileOptions
 {
     ContentTypeProvider = contentTypeProvider,
     ServeUnknownFileTypes = true
 });
 
-// 2. القراءة المباشرة من مجلد uploads الخارجي
 var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
 if (!Directory.Exists(uploadsPath))
 {
@@ -302,7 +318,6 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseRouting();
 
-// UseCors يجب أن يوضع مباشرة بعد UseRouting وقبل UseAuthentication
 app.UseCors(CorsPolicyName);
 
 app.UseAuthentication();

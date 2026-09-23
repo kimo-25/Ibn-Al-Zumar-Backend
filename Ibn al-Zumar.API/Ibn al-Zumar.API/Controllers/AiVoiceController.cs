@@ -24,7 +24,6 @@ namespace IbnAlZumar.API.Controllers
         /// </summary>
         [HttpPost("voice-command")]
         [ProducesResponseType(typeof(VoiceCommandResultDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(VoiceCommandResultDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> HandleVoiceCommand([FromBody] VoiceCommandRequestDto dto, CancellationToken cancellationToken)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Text))
@@ -35,7 +34,9 @@ namespace IbnAlZumar.API.Controllers
             var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email");
             var result = await _voiceCommandService.ProcessCommandAsync(dto.Text, userEmail, cancellationToken);
 
-            return result.Success ? Ok(result) : BadRequest(result);
+            // أخطاء الفهم أو عدم تطابق المنتجات أخطاء أعمال متوقعة وليست أخطاء HTTP؛
+            // نعيد العقد نفسه دائماً بحالة 200 كي يتمكن الـ POS من عرض التفاصيل بسلاسة.
+            return Ok(result);
         }
     }
 }

@@ -35,6 +35,8 @@ public class AttendanceLogDto
     public string Status { get; set; } = string.Empty;
     public string? Notes { get; set; }
     public double? WorkedHours { get; set; }
+    public int? WorkedMinutes { get; set; }
+    public string? VerificationMethod { get; set; }
 }
 
 public class PayrollSummaryDto
