@@ -36,10 +36,7 @@ namespace IbnAlZumar.API.Ai.Files
 
         public Task<GeminiPart> BuildGeminiPartAsync(AiChatAttachmentDto attachment, CancellationToken ct)
         {
-            // Null-check صريح بدل الاعتماد على "?." — ده بيخلي الكومبايلر متأكد إن
-            // attachment مش null طول باقي الميثود (Nullable Flow Analysis narrowing)،
-            // وبيحل تحذيري CS8604/CS8602 اللي كانوا ناتجين عن استخدام "attachment?."
-            // مبدئياً ثم الاعتماد على "attachment" مباشرة بعد كده.
+            // Null-check صريح يمنع تحذيرات CS8604/CS8602 ويؤكد للكومبايلر أن الكائن ليس null
             ArgumentNullException.ThrowIfNull(attachment);
 
             var mimeType = attachment.MimeType ?? string.Empty;

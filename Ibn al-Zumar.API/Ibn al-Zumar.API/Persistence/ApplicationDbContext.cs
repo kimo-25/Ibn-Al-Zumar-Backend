@@ -214,6 +214,8 @@ public class ApplicationDbContext : DbContext
             Address = null,
             IsMainWarehouse = true,
             IsActive = true,
+            Tier = IbnAlZumar.Domain.Enums.WarehouseTier.MainCentral, // صريحة لتأكيد التبعية الهرمية
+            ParentWarehouseId = null,
             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             UpdatedAt = null,
             IsDeleted = false

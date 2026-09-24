@@ -45,6 +45,10 @@ namespace IbnAlZumar.API.DTOs.Sales
         public string PaymentMethod { get; set; } = string.Empty;
         public string PaymentStatus { get; set; } = string.Empty;
         public string? PaymobTransactionId { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal TaxRate { get; set; }
+        public decimal TaxAmount { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

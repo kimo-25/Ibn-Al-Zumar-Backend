@@ -1,6 +1,7 @@
 ﻿using IbnAlZumar.API.Common.Exceptions;
 using IbnAlZumar.API.DTOs.Catalog;
 using IbnAlZumar.API.Services.Catalog;
+using IbnAlZumar.Persistence.Seed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -97,7 +98,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize]
+        [Authorize(Policy = DataSeeder.PermissionCodes.ProductsEdit)]
         [Consumes("multipart/form-data")] // 👈 تم التعديل لـ Swagger
         [ProducesResponseType(typeof(ProductResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -147,14 +148,6 @@ namespace IbnAlZumar.API.Controllers
         // ==========================================
         // Bulk Import Products via Excel (Admin / Moderator)
         // ==========================================
-        // NOTE ON AUTHORIZATION:
-        // Your RBAC system is permission-policy based (see DataSeeder / PermissionPolicyProvider),
-        // not raw ASP.NET role-based. Re-using "Products.Create" keeps this endpoint consistent
-        // with the single-create endpoint above and works for whichever roles (Admin, Moderator, ...)
-        // your seeder has granted that permission to.
-        // If you want finer control (e.g. only Admin can bulk-import, but Moderator cannot),
-        // add a dedicated "Products.BulkImport" permission in your DataSeeder and swap the
-        // policy name below.
         [HttpPost("bulk-import")]
         [Authorize(Policy = "Products.Create")]
         [Consumes("multipart/form-data")]

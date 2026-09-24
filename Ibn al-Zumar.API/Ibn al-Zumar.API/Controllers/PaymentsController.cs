@@ -4,6 +4,7 @@ using IbnAlZumar.API.Persistence;
 using IbnAlZumar.API.Services.Payments;
 using IbnAlZumar.Domain.Entities.Sales;
 using IbnAlZumar.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Services.Sales;
@@ -25,8 +26,13 @@ public sealed class PaymentsController : ControllerBase
         _paymob = paymob;
     }
 
+    /// <summary>
+    /// السعر والإجمالي يتم احتسابهما دائماً من السيرفر داخل OrderService.CreateAsync — لا يُعتمد على قيم العميل.
+    /// </summary>
     [HttpPost("checkout")]
+    [Authorize] // C-01: checkout must be authenticated — prevents anonymous price-tampered orders
     [ProducesResponseType(typeof(PaymentCheckoutResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Checkout([FromBody] CreateOrderDto request, CancellationToken cancellationToken)
     {
         if (request.Items is null || request.Items.Count == 0) return BadRequest(new { message = "السلة فارغة." });
@@ -58,6 +64,8 @@ public sealed class PaymentsController : ControllerBase
         });
     }
 
+    // Server-to-server Paymob callback — intentionally NOT [Authorize] (no user JWT exists here).
+    // Integrity is enforced by the HMAC check below, not by ASP.NET auth.
     [HttpPost("webhook")]
     public async Task<IActionResult> Webhook([FromBody] PaymentWebhookRequest request, CancellationToken cancellationToken)
     {

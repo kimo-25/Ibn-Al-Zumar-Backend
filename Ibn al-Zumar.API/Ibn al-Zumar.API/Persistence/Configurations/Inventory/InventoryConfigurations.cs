@@ -4,20 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace IbnAlZumar.Persistence.Configurations.Inventory;
 
-public class WarehouseConfiguration : IEntityTypeConfiguration<Warehouse>
-{
-    public void Configure(EntityTypeBuilder<Warehouse> builder)
-    {
-        builder.ToTable("Warehouses");
-        builder.HasKey(w => w.Id);
-
-        builder.Property(w => w.Name).IsRequired().HasMaxLength(150);
-        builder.Property(w => w.Address).HasMaxLength(300);
-
-        builder.HasIndex(w => w.Name).IsUnique();
-    }
-}
-
 public class ProductStockConfiguration : IEntityTypeConfiguration<ProductStock>
 {
     public void Configure(EntityTypeBuilder<ProductStock> builder)
@@ -60,6 +46,12 @@ public class InventoryTransactionConfiguration : IEntityTypeConfiguration<Invent
         builder.HasOne(t => t.Warehouse)
             .WithMany()
             .HasForeignKey(t => t.WarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // === ÑÈØ ÇáÊÔÛíáÉ (ProductBatch) ÈÓÌá ÇáÍÑßÉ ===
+        builder.HasOne(t => t.ProductBatch)
+            .WithMany(b => b.InventoryTransactions)
+            .HasForeignKey(t => t.ProductBatchId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(t => new { t.ProductId, t.WarehouseId, t.TransactionDate });

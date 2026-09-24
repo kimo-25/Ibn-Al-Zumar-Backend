@@ -1,4 +1,5 @@
-﻿using IbnAlZumar.API.DTOs.Sales;
+﻿using DTOs.Sales;
+using IbnAlZumar.API.DTOs.Sales;
 using IbnAlZumar.Domain.Enums;
 
 namespace IbnAlZumar.API.Services.Payments;

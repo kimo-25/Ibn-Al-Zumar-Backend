@@ -165,3 +165,16 @@ public enum CustomZoneRequestStatus
     Approved = 2,
     Rejected = 3
 }
+
+// ================= Sheet 1: Multi-Warehouse Hierarchy =================
+/// <summary>
+/// 3-tier warehouse hierarchy. MainCentral is top-level (ParentWarehouseId == null),
+/// RegionalBranch hangs off a MainCentral, PosShelfLocation hangs off a RegionalBranch
+/// (or, for small setups, directly off a MainCentral).
+/// </summary>
+public enum WarehouseTier
+{
+    MainCentral = 1,
+    RegionalBranch = 2,
+    PosShelfLocation = 3
+}

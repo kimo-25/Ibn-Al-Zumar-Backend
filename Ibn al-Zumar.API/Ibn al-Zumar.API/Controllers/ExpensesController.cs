@@ -1,54 +1,47 @@
-﻿using System.Security.Claims;
-using IbnAlZumar.API.Persistence;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IbnAlZumar.API.Controllers
 {
+    /// <summary>
+    /// H-09: there is currently no Expense entity/DbSet (see ARCHITECTURE.md §3.7 — 
+    /// "controller stub, no entity"). Returning a fake 200 OK here would tell the POS
+    /// cashier a cash expense was recorded when it was silently discarded — a direct
+    /// cash-accounting risk. Until Expense is a real, persisted entity, this endpoint
+    /// honestly reports itself as not implemented instead.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // لازم يكون الكاشير عامل لوج إن
+    [Authorize]
     public class ExpensesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-
-        public ExpensesController(ApplicationDbContext context)
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
+        public IActionResult Create([FromBody] CreateExpenseRequestDto dto)
         {
-            _context = context;
+            return StatusCode(StatusCodes.Status501NotImplemented, new
+            {
+                message = "ميزة تسجيل المصاريف غير مفعّلة بعد على السيرفر. لم يتم حفظ أي بيانات.",
+                messageEn = "Expense persistence is not implemented yet. Nothing was saved."
+            });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseDto dto)
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
+        public IActionResult GetAll()
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var userEmail = User.FindFirstValue(ClaimTypes.Email)
-                            ?? User.FindFirstValue(ClaimTypes.Name);
-
-            // السطر ده عشان نمنع تحذير CS1998 لحين تفعيل الداتابيز
-            await Task.CompletedTask;
-
-            // TODO: قم بإنشاء Entity باسم Expense في الداتابيز وفعّل الكود التالي
-            /*
-            var expense = new Expense 
+            return StatusCode(StatusCodes.Status501NotImplemented, new
             {
-                Amount = dto.Amount,
-                Notes = dto.Notes,
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = userEmail
-            };
-            
-            _context.Expenses.Add(expense);
-            await _context.SaveChangesAsync();
-            */
-
-            return Ok(new { message = "تم تسجيل المصروف بنجاح", data = dto });
+                message = "ميزة المصاريف غير مفعّلة بعد على السيرفر.",
+                messageEn = "Expense persistence is not implemented yet."
+            });
         }
     }
 
-    // الـ DTO الخاص بالمصروفات
-    public class CreateExpenseDto
+    // Placeholder request shape matching what PosCheckoutPage.jsx currently sends
+    // ({ amount, notes }). Move this into DTOs/Finance/ once Expense is a real
+    // entity and replace with a proper CreateExpenseDto + validation.
+    public sealed class CreateExpenseRequestDto
     {
         public decimal Amount { get; set; }
         public string? Notes { get; set; }

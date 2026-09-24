@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using DTOs.Sales;
 using IbnAlZumar.API.DTOs.Sales;
 using IbnAlZumar.Domain.Enums;
 using Microsoft.Extensions.Options;

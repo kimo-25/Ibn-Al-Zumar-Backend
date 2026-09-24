@@ -1,6 +1,7 @@
 ﻿using IbnAlZumar.API.Common.Exceptions;
 using IbnAlZumar.API.DTOs.Sales;
 using IbnAlZumar.API.Persistence;
+using IbnAlZumar.Domain.Entities.Inventory;
 using IbnAlZumar.Domain.Entities.Sales;
 using IbnAlZumar.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,12 @@ public class OrderService : IOrderService
     private readonly ApplicationDbContext _context;
     private readonly IEmailService _emailService;
 
+    // H-08: single source of truth for VAT. Matches ReportsController's
+    // TaxEstimated multiplier (0.14m) — the POS frontend was hardcoded to
+    // 0.15 and never matched this. If the rate ever needs to be configurable
+    // per-tenant, move this to IOptions<TaxSettings> instead of a constant.
+    private const decimal EgyptVatRate = 0.14m;
+
     public OrderService(ApplicationDbContext context, IEmailService emailService)
     {
         _context = context;
@@ -22,34 +29,81 @@ public class OrderService : IOrderService
 
     public async Task<OrderResponseDto> CreateAsync(CreateOrderDto dto)
     {
+        if (dto.Items is null || dto.Items.Count == 0)
+        {
+            throw new BadRequestException("السلة فارغة. لا يمكن إنشاء طلب بدون عناصر.");
+        }
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
         try
         {
+            // -----------------------------------------------------------
+            // C-01: authoritative, server-side pricing.
+            // Client-supplied UnitPrice / TotalAmount are NEVER trusted —
+            // every price is re-fetched from the Products table.
+            // -----------------------------------------------------------
+            var productIds = dto.Items.Select(i => i.ProductId).Distinct().ToList();
+
+            var products = await _context.Products
+                .Where(p => productIds.Contains(p.Id) && p.IsActive)
+                .ToDictionaryAsync(p => p.Id);
+
             decimal calculatedTotal = 0;
-            var normalizedDiscountType = string.Equals(dto.DiscountType, "Percentage", StringComparison.OrdinalIgnoreCase) ? DiscountType.Percentage : DiscountType.FixedAmount;
-            var discountValue = Math.Max(dto.DiscountValue, 0);
             var orderItems = new List<OrderItem>();
+            var quantitiesByProduct = new Dictionary<int, int>();
 
             foreach (var item in dto.Items)
             {
-                var lineTotal = item.Quantity * item.UnitPrice;
+                if (item.Quantity <= 0)
+                {
+                    throw new BadRequestException($"الكمية غير صالحة للمنتج رقم {item.ProductId}. يجب أن تكون أكبر من صفر.");
+                }
+
+                if (!products.TryGetValue(item.ProductId, out var product))
+                {
+                    throw new NotFoundException($"المنتج رقم {item.ProductId} غير موجود أو غير متاح حالياً.");
+                }
+
+                // Server-computed price — the client's item.UnitPrice is ignored entirely.
+                var authoritativeUnitPrice = product.SellingPrice;
+                var lineTotal = item.Quantity * authoritativeUnitPrice;
                 calculatedTotal += lineTotal;
 
                 orderItems.Add(new OrderItem
                 {
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice,
+                    UnitPrice = authoritativeUnitPrice,
                     DiscountType = DiscountType.None,
                     DiscountValue = 0,
                     DiscountAmount = 0,
                     LineTotal = lineTotal
                 });
+
+                quantitiesByProduct[item.ProductId] =
+                    quantitiesByProduct.GetValueOrDefault(item.ProductId) + item.Quantity;
             }
+
+            var normalizedDiscountType = string.Equals(dto.DiscountType, "Percentage", StringComparison.OrdinalIgnoreCase) ? DiscountType.Percentage : DiscountType.FixedAmount;
+            var discountValue = Math.Max(dto.DiscountValue, 0);
 
             var computedDiscount = normalizedDiscountType == DiscountType.Percentage
                 ? calculatedTotal * Math.Min(discountValue, 100) / 100m
                 : discountValue;
             computedDiscount = Math.Min(computedDiscount, calculatedTotal);
+
+            // -----------------------------------------------------------
+            // H-08: server-side VAT. Computed on the discounted subtotal,
+            // never trusted from the client, never re-derived later —
+            // Order.TaxRate/Order.TaxAmount are the frozen historical
+            // figures for this order (same "never recompute" invariant as
+            // OrderItem.UnitPrice — §7.4 of the architecture doc).
+            // -----------------------------------------------------------
+            var discountedSubtotal = Math.Max(calculatedTotal - computedDiscount, 0);
+            var taxAmount = Math.Round(discountedSubtotal * EgyptVatRate, 2);
+            var totalAmount = discountedSubtotal + taxAmount;
+
             var defaultWarehouseId = await _context.Warehouses
                 .Select(w => w.Id)
                 .FirstOrDefaultAsync();
@@ -59,8 +113,16 @@ public class OrderService : IOrderService
                 defaultWarehouseId = 1;
             }
 
-            var orderCount = await _context.Orders.CountAsync();
-            var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{(orderCount + 1):D4}";
+            // -----------------------------------------------------------
+            // H-04: atomic, DB-level order numbering. CountAsync()+1 read
+            // then write is a race under concurrent checkouts (two cashiers
+            // can both read the same count before either commits, producing
+            // duplicate order numbers). A SQL Server SEQUENCE increments
+            // atomically regardless of concurrent transactions.
+            // Requires the 'dbo.OrderNumberSeq' sequence — see migration
+            // note at the end of this file.
+            // -----------------------------------------------------------
+            var orderNumber = await GenerateOrderNumberAsync();
 
             int? customerId = null;
             if (!string.IsNullOrEmpty(dto.CustomerEmail))
@@ -100,7 +162,9 @@ public class OrderService : IOrderService
                 DiscountType = normalizedDiscountType,
                 DiscountValue = discountValue,
                 DiscountAmount = computedDiscount,
-                TotalAmount = Math.Max(calculatedTotal - computedDiscount, 0),
+                TaxRate = EgyptVatRate,      // H-08 — requires Order.TaxRate (decimal), see migration note
+                TaxAmount = taxAmount,       // H-08 — requires Order.TaxAmount (decimal), see migration note
+                TotalAmount = totalAmount,
                 Items = orderItems,
                 IsCustomZoneRequested = dto.IsCustomZoneRequested,
                 CustomZoneName = dto.IsCustomZoneRequested ? dto.CustomZoneName?.Trim() : null,
@@ -110,7 +174,48 @@ public class OrderService : IOrderService
             };
 
             _context.Orders.Add(order);
+            await _context.SaveChangesAsync(); // need order.Id for the InventoryTransaction ReferenceId below
+
+            // -----------------------------------------------------------
+            // C-02: inventory decrement, in the SAME transaction as the
+            // order — with a stock-sufficiency check and an append-only
+            // InventoryTransaction ledger row per product (invariant §7.2).
+            // -----------------------------------------------------------
+            foreach (var (productId, quantity) in quantitiesByProduct)
+            {
+                var product = products[productId];
+
+                if (!product.TrackInventory)
+                {
+                    continue; // untracked products (e.g. services) don't touch stock
+                }
+
+                var stock = await _context.Set<ProductStock>()
+                    .FirstOrDefaultAsync(s => s.ProductId == productId && s.WarehouseId == order.WarehouseId);
+
+                if (stock is null || stock.QuantityOnHand < quantity)
+                {
+                    throw new BadRequestException(
+                        $"الكمية المتاحة غير كافية للمنتج \"{product.Name}\" في المخزن المحدد.");
+                }
+
+                stock.QuantityOnHand -= quantity;
+
+                _context.Set<InventoryTransaction>().Add(new InventoryTransaction
+                {
+                    ProductId = productId,
+                    WarehouseId = order.WarehouseId,
+                    TransactionType = InventoryTransactionType.SaleDeducted,
+                    QuantityChange = -quantity,
+                    ReferenceType = "Order",
+                    ReferenceId = order.Id,
+                    TransactionDate = DateTime.UtcNow,
+                    Notes = $"بيع - طلب رقم {order.OrderNumber}"
+                });
+            }
+
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             return new OrderResponseDto
             {
@@ -118,6 +223,10 @@ public class OrderService : IOrderService
                 CustomerName = order.GuestName ?? string.Empty,
                 CustomerPhone = order.GuestPhone ?? string.Empty,
                 OrderNumber = order.OrderNumber,
+                SubTotal = order.SubTotal,             // H-08 — add to OrderResponseDto if not already present
+                DiscountAmount = order.DiscountAmount, // H-08 — add to OrderResponseDto if not already present
+                TaxRate = order.TaxRate,               // H-08 — add to OrderResponseDto
+                TaxAmount = order.TaxAmount,            // H-08 — add to OrderResponseDto
                 TotalAmount = order.TotalAmount,
                 Status = order.Status.ToString(),
                 PaymentMethod = order.PaymentMethod.ToString(),
@@ -128,9 +237,30 @@ public class OrderService : IOrderService
         }
         catch (DbUpdateException ex)
         {
+            await transaction.RollbackAsync();
             var innerMessage = ex.InnerException?.Message ?? ex.Message;
             throw new Exception($"Database Error: {innerMessage}");
         }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// H-04: atomically reserves the next order sequence number at the
+    /// database level (SQL Server SEQUENCE — NEXT VALUE FOR is guaranteed
+    /// non-repeating across concurrent sessions, unlike Count()+1 which can
+    /// race). See migration note at the bottom of this file.
+    /// </summary>
+    private async Task<string> GenerateOrderNumberAsync()
+    {
+        var sequenceValue = await _context.Database
+            .SqlQueryRaw<long>("SELECT NEXT VALUE FOR dbo.OrderNumberSeq AS [Value]")
+            .SingleAsync();
+
+        return $"ORD-{DateTime.UtcNow:yyyyMMdd}-{sequenceValue:D6}";
     }
 
     public async Task<List<CustomerOrderDto>> GetMyOrdersAsync(string userEmail)
@@ -366,3 +496,48 @@ public class OrderService : IOrderService
         }
     }
 }
+
+/* =============================================================================
+   REQUIRED MIGRATION (H-04 + H-08) — this file alone will not compile/run
+   until you:
+
+   1. Add two properties to Domain/Entities/Sales/Order.cs:
+        public decimal TaxRate { get; set; }
+        public decimal TaxAmount { get; set; }
+
+   2. Add matching properties to DTOs/Sales/OrderResponseDto.cs:
+        public decimal TaxRate { get; set; }
+        public decimal TaxAmount { get; set; }
+      (and to CustomerOrderDto too, if you want tax on order-detail views —
+      not required for the POS checkout flow above.)
+
+   3. Create the SQL Server sequence used by GenerateOrderNumberAsync():
+        dotnet ef migrations add AddOrderTaxAndOrderNumberSequence
+
+      Then inside the generated migration's Up()/Down():
+
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<decimal>(
+                name: "TaxRate", table: "Orders",
+                type: "decimal(5,4)", nullable: false, defaultValue: 0m);
+
+            migrationBuilder.AddColumn<decimal>(
+                name: "TaxAmount", table: "Orders",
+                type: "decimal(18,2)", nullable: false, defaultValue: 0m);
+
+            migrationBuilder.Sql(
+                "CREATE SEQUENCE dbo.OrderNumberSeq AS BIGINT START WITH 1 INCREMENT BY 1 NO CACHE;");
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql("DROP SEQUENCE dbo.OrderNumberSeq;");
+            migrationBuilder.DropColumn(name: "TaxAmount", table: "Orders");
+            migrationBuilder.DropColumn(name: "TaxRate", table: "Orders");
+        }
+
+   Migrations auto-apply at startup (Program.cs → app.SeedDatabaseAsync()),
+   so this runs on next deploy — no manual DB step needed beyond committing
+   the migration.
+   ============================================================================= */

@@ -1,4 +1,5 @@
 ﻿using IbnAlZumar.API.Persistence;
+using IbnAlZumar.Persistence.Seed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ namespace IbnAlZumar.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Policy = DataSeeder.PermissionCodes.ReportsView)]
 public class ReportsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;

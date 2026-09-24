@@ -48,11 +48,24 @@ if (!string.IsNullOrWhiteSpace(port))
 }
 
 // ---------------------------------------------------------------------------
-// Configuration (JWT Settings with Safe Fallback for Azure Environment)
+// Configuration (JWT Settings — NO hardcoded fallback. C-07)
 // ---------------------------------------------------------------------------
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? builder.Configuration["Jwt__Key"]
-    ?? "YourSuperSecretKeyForIbnAlZumarJWTToken1234567890!";
+    ?? builder.Configuration["Jwt__Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "JWT signing key is missing. Set 'Jwt:Key' in configuration (appsettings, " +
+        "environment variable 'Jwt__Key', Azure App Settings, or a secret store) before starting the application.");
+}
+
+if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    throw new InvalidOperationException(
+        "JWT signing key ('Jwt:Key') must be at least 256 bits (32 bytes) long. " +
+        $"The configured key is only {Encoding.UTF8.GetByteCount(jwtKey)} bytes.");
+}
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
     ?? builder.Configuration["Jwt__Issuer"]

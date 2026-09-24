@@ -55,4 +55,7 @@ public class Product : BaseEntity
     public ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItem>();
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
+
+    public ICollection<ProductBatch> ProductBatches { get; set; } = new List<ProductBatch>();
+    public ICollection<UnitConversion> UnitConversions { get; set; } = new List<UnitConversion>();
 }

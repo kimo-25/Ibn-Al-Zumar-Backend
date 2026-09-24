@@ -3,6 +3,7 @@ using System.Globalization;
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.Domain.Entities.Catalog;
 using IbnAlZumar.Domain.Entities.Identity;
+using IbnAlZumar.Domain.Entities.Purchasing;
 using IbnAlZumar.Domain.Entities.Reminders;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,14 @@ namespace IbnAlZumar.Persistence.Seed;
 
 public static class DataSeeder
 {
+    /// <summary>
+    /// Sheet 1: fixed, reserved Id for the "Opening Balance Supplier" (مورد أول المدة) so any
+    /// module can reference it as a stable constant (e.g. ProductBatch.SupplierId, PurchaseOrder
+    /// screens offering "register legacy stock") without a lookup. Never reuse this Id for a real
+    /// supplier.
+    /// </summary>
+    public const int OpeningBalanceSupplierId = 999999;
+
     public static class PermissionCodes
     {
         public const string ProductsView = "Products.View";
@@ -22,6 +31,7 @@ public static class DataSeeder
         public const string InventoryView = "Inventory.View";
         public const string InventoryAdjust = "Inventory.Adjust";
         public const string InventoryTransfer = "Inventory.Transfer";
+        public const string InventoryManageBatches = "Inventory.ManageBatches";
 
         public const string PurchasingView = "Purchasing.View";
         public const string PurchasingCreate = "Purchasing.Create";
@@ -52,6 +62,7 @@ public static class DataSeeder
             (InventoryView, "View Inventory", "Inventory"),
             (InventoryAdjust, "Adjust Stock", "Inventory"),
             (InventoryTransfer, "Transfer Stock Between Warehouses", "Inventory"),
+            (InventoryManageBatches, "Receive/Consume Product Batches", "Inventory"),
             (PurchasingView, "View Purchase Orders", "Purchasing"),
             (PurchasingCreate, "Create Purchase Orders", "Purchasing"),
             (PurchasingApprove, "Approve/Receive Purchase Orders", "Purchasing"),
@@ -77,11 +88,13 @@ public static class DataSeeder
         await SeedSuperAdminAsync(context, passwordHasher, logger);
         await SeedModeratorUserAsync(context, passwordHasher, logger);
 
-        // --- إضافة زراعة الكتالوج والبيانات الأساسية ---
         await SeedBrandsAsync(context, logger);
         await SeedCategoriesAsync(context, logger);
         await SeedProductsFromCsvAsync(context, logger);
         await SeedRemindersFromCsvAsync(context, logger);
+
+        // --- Sheet 1 ---
+        await SeedOpeningBalanceSupplierAsync(context, logger);
     }
 
     private static async Task SeedPermissionsAsync(ApplicationDbContext context, ILogger logger)
@@ -191,31 +204,31 @@ public static class DataSeeder
             .Select(p => new RolePermission { RoleId = cashierRole.Id, PermissionId = p.Id })
             .ToList();
 
-        if (ownerMissing.Count == 0 && adminMissing.Count == 0 && moderatorMissing.Count == 0 && cashierMissing.Count == 0) return;
+        var toAdd = ownerMissing.Concat(adminMissing).Concat(moderatorMissing).Concat(cashierMissing).ToList();
+        if (toAdd.Count == 0) return;
 
-        context.RolePermissions.AddRange(ownerMissing);
-        context.RolePermissions.AddRange(adminMissing);
-        context.RolePermissions.AddRange(moderatorMissing);
-        context.RolePermissions.AddRange(cashierMissing);
+        context.RolePermissions.AddRange(toAdd);
         await context.SaveChangesAsync();
-        logger.LogInformation("Mapped permissions to roles successfully.");
+        logger.LogInformation("Seeded {Count} role-permission links", toAdd.Count);
     }
 
     private static async Task SeedSuperAdminAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
     {
-        const string defaultUsername = "admin";
-        const string defaultPassword = "Admin@123456";
+        const string username = "admin";
+        const string password = "AdminPassword123!";
 
-        if (await context.Users.AnyAsync(u => u.Username == defaultUsername)) return;
+        if (await context.Users.AnyAsync(u => u.Username == username)) return;
 
         var adminUser = new User
         {
-            FullName = "Super Admin",
-            Username = defaultUsername,
-            Email = "admin@ibnalzumar.local",
+            FullName = "Super Admin Owner",
+            Username = username,
+            Email = "admin@ibnalzumar.com",
             IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
-        adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, defaultPassword);
+        adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, password);
 
         context.Users.Add(adminUser);
         await context.SaveChangesAsync();
@@ -224,12 +237,12 @@ public static class DataSeeder
         context.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = ownerRole.Id });
         await context.SaveChangesAsync();
 
-        logger.LogWarning("Seeded default Super Admin account.");
+        logger.LogInformation("Seeded Super Admin Owner user.");
     }
 
     private static async Task SeedModeratorUserAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, ILogger logger)
     {
-        const string username = "Kamal";
+        const string username = "kamal";
         const string password = "Kamal2004!!";
 
         if (await context.Users.AnyAsync(u => u.Username == username)) return;
@@ -240,6 +253,8 @@ public static class DataSeeder
             Username = username,
             Email = "kamal@local",
             IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
         modUser.PasswordHash = passwordHasher.HashPassword(modUser, password);
 
@@ -252,8 +267,6 @@ public static class DataSeeder
 
         logger.LogInformation("Seeded default Moderator (Kamal).");
     }
-
-    // --- Data Seeding Methods for Catalog & Reminders ---
 
     private static async Task SeedBrandsAsync(ApplicationDbContext context, ILogger logger)
     {
@@ -341,7 +354,6 @@ public static class DataSeeder
                 var rawSku = GetValue(parts, 1);
                 var sku = !string.IsNullOrWhiteSpace(rawSku) ? rawSku : Guid.NewGuid().ToString()[..8].ToUpper();
 
-                // فحص وتجنب تكرار الـ SKU
                 if (existingSkus.Contains(sku))
                 {
                     sku = $"{sku}-{Guid.NewGuid().ToString()[..4].ToUpper()}";
@@ -391,6 +403,46 @@ public static class DataSeeder
             {
                 logger.LogInformation("Reminders.csv file found, processing...");
             }
+        }
+    }
+
+    private static async Task SeedOpeningBalanceSupplierAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (await context.Set<Supplier>().AnyAsync(s => s.Id == OpeningBalanceSupplierId))
+            return;
+
+        var supplier = new Supplier
+        {
+            Id = OpeningBalanceSupplierId,
+            Name = "Opening Balance Supplier (مورد أول المدة)",
+            ContactPerson = null,
+            Phone = null,
+            Email = null,
+            Address = null,
+            TaxId = "OPENING-BALANCE",
+            CurrentBalance = 0m,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            IsDeleted = false
+        };
+
+        await using var dbTransaction = await context.Database.BeginTransactionAsync();
+        try
+        {
+            // استخدام ExecuteSqlRawAsync مع نصوص ثابتة بدون Interpolation لحل الـ Warnings تماماً
+            await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT dbo.Suppliers ON");
+            context.Set<Supplier>().Add(supplier);
+            await context.SaveChangesAsync();
+            await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT dbo.Suppliers OFF");
+            await dbTransaction.CommitAsync();
+
+            logger.LogInformation("Seeded Opening Balance Supplier (مورد أول المدة) with fixed Id={Id}", OpeningBalanceSupplierId);
+        }
+        catch (Exception ex)
+        {
+            await dbTransaction.RollbackAsync();
+            logger.LogError(ex, "Failed to seed Opening Balance Supplier with fixed Id={Id}", OpeningBalanceSupplierId);
+            throw;
         }
     }
 

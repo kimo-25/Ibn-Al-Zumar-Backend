@@ -48,6 +48,7 @@ public class ProductAttributeDefinition : BaseEntity
     public AttributeDataType DataType { get; set; } = AttributeDataType.Text;
 
     public ICollection<ProductAttributeValue> ProductAttributeValues { get; set; } = new List<ProductAttributeValue>();
+    public ICollection<ProductVariantAttributeValue> ProductVariantAttributeValues { get; set; } = new List<ProductVariantAttributeValue>();
 }
 
 public class ProductAttributeValue : BaseEntity
@@ -73,6 +74,7 @@ public class ProductImage : BaseEntity
     public bool IsPrimary { get; set; }
     public int DisplayOrder { get; set; }
 }
+
 public class ProductVariant : BaseEntity
 {
     public int ProductId { get; set; }
@@ -95,5 +97,62 @@ public class ProductVariant : BaseEntity
     [MaxLength(100)]
     public string? Material { get; set; }
 
+    /// <summary>Sheet 1: e.g. "S/M/L", "42", "1m x 2m" — free text since sizing conventions vary per product line.</summary>
+    [MaxLength(100)]
+    public string? Size { get; set; }
+
     public bool IsActive { get; set; } = true;
+
+    /// <summary>
+    /// Sheet 1: structured, arbitrary attribute links for this variant (beyond the fixed
+    /// Color/Finish/Material/Size columns above), reusing the same ProductAttributeDefinition
+    /// catalog as Product-level attributes so filters/facets stay consistent.
+    /// </summary>
+    public ICollection<ProductVariantAttributeValue> AttributeValues { get; set; } = new List<ProductVariantAttributeValue>();
+}
+
+/// <summary>
+/// Sheet 1: many-to-many-ish link giving a ProductVariant arbitrary typed attributes
+/// (e.g. "Voltage" -> "220V") drawn from the shared ProductAttributeDefinition catalog,
+/// on top of the fixed Color/Finish/Material/Size columns on ProductVariant itself.
+/// </summary>
+public class ProductVariantAttributeValue : BaseEntity
+{
+    public int ProductVariantId { get; set; }
+    public ProductVariant ProductVariant { get; set; } = null!;
+
+    public int ProductAttributeDefinitionId { get; set; }
+    public ProductAttributeDefinition ProductAttributeDefinition { get; set; } = null!;
+
+    [Required, MaxLength(200)]
+    public string Value { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Sheet 1: replaces the flat Product.QuantityPerCarton for full piece/box/carton (and beyond)
+/// selling. All stock (ProductStock.QuantityOnHand, ProductBatch quantities) is stored in the
+/// product's base unit; conversion to/from retail (piece) or wholesale (carton/box) units happens
+/// only at the POS/DTO boundary, using the row where IsBaseUnit == true as the anchor.
+/// Product.QuantityPerCarton is kept for backward compatibility with existing screens/reports and
+/// should be kept in sync with the "Carton -> (base unit)" conversion row when both are present.
+/// </summary>
+public class UnitConversion : BaseEntity
+{
+    public int ProductId { get; set; }
+    public Product Product { get; set; } = null!;
+
+    /// <summary>e.g. "Piece", "Box", "Carton".</summary>
+    [Required, MaxLength(50)]
+    public string FromUnit { get; set; } = string.Empty;
+
+    /// <summary>The product's base unit, e.g. "Piece".</summary>
+    [Required, MaxLength(50)]
+    public string ToUnit { get; set; } = string.Empty;
+
+    /// <summary>How many ToUnit (base units) make up 1 FromUnit.</summary>
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal Factor { get; set; } = 1m;
+
+    /// <summary>True for the row where FromUnit == ToUnit == the product's base unit (Factor = 1).</summary>
+    public bool IsBaseUnit { get; set; } = false;
 }

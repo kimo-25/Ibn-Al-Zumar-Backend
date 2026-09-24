@@ -4,6 +4,7 @@ using IbnAlZumar.API.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ibn_alZumar.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260923214146_AddOrderTaxAndOrderNumberSequence")]
+    partial class AddOrderTaxAndOrderNumberSequence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -495,10 +498,6 @@ namespace Ibn_alZumar.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Size")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
 
@@ -513,89 +512,6 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("ProductId", "IsActive");
 
                     b.ToTable("ProductVariants", (string)null);
-                });
-
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductVariantAttributeValue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ProductAttributeDefinitionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductVariantId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductAttributeDefinitionId");
-
-                    b.HasIndex("ProductVariantId", "ProductAttributeDefinitionId")
-                        .IsUnique();
-
-                    b.ToTable("ProductVariantAttributeValue");
-                });
-
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.UnitConversion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Factor")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<string>("FromUnit")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsBaseUnit")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ToUnit")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId", "FromUnit")
-                        .IsUnique();
-
-                    b.ToTable("UnitConversion");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.Permission", b =>
@@ -848,9 +764,6 @@ namespace Ibn_alZumar.API.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int?>("ProductBatchId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -880,73 +793,11 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductBatchId");
-
                     b.HasIndex("WarehouseId");
 
                     b.HasIndex("ProductId", "WarehouseId", "TransactionDate");
 
                     b.ToTable("InventoryTransactions", (string)null);
-                });
-
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.ProductBatch", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BatchNumber")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("CostPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("InitialQuantity")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ProductionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RemainingQuantity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SupplierId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("WarehouseId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BatchNumber");
-
-                    b.HasIndex("ExpiryDate");
-
-                    b.HasIndex("WarehouseId");
-
-                    b.HasIndex("ProductId", "WarehouseId", "ExpiryDate");
-
-                    b.ToTable("ProductBatch");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.ProductStock", b =>
@@ -1102,22 +953,15 @@ namespace Ibn_alZumar.API.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<int?>("ParentWarehouseId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Tier")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentWarehouseId");
+                    b.HasIndex("Name")
+                        .IsUnique();
 
-                    b.HasIndex("Tier");
-
-                    b.ToTable("Warehouses");
+                    b.ToTable("Warehouses", (string)null);
 
                     b.HasData(
                         new
@@ -1127,8 +971,7 @@ namespace Ibn_alZumar.API.Migrations
                             IsActive = true,
                             IsDeleted = false,
                             IsMainWarehouse = true,
-                            Name = "Main Warehouse",
-                            Tier = 1
+                            Name = "Main Warehouse"
                         });
                 });
 
@@ -2028,36 +1871,6 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductVariantAttributeValue", b =>
-                {
-                    b.HasOne("IbnAlZumar.Domain.Entities.Catalog.ProductAttributeDefinition", "ProductAttributeDefinition")
-                        .WithMany("ProductVariantAttributeValues")
-                        .HasForeignKey("ProductAttributeDefinitionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("IbnAlZumar.Domain.Entities.Catalog.ProductVariant", "ProductVariant")
-                        .WithMany("AttributeValues")
-                        .HasForeignKey("ProductVariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProductAttributeDefinition");
-
-                    b.Navigation("ProductVariant");
-                });
-
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.UnitConversion", b =>
-                {
-                    b.HasOne("IbnAlZumar.Domain.Entities.Catalog.Product", "Product")
-                        .WithMany("UnitConversions")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.RolePermission", b =>
                 {
                     b.HasOne("IbnAlZumar.Domain.Entities.Identity.Permission", "Permission")
@@ -2127,11 +1940,6 @@ namespace Ibn_alZumar.API.Migrations
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.InventoryTransaction", b =>
                 {
-                    b.HasOne("IbnAlZumar.Domain.Entities.Inventory.ProductBatch", "ProductBatch")
-                        .WithMany("InventoryTransactions")
-                        .HasForeignKey("ProductBatchId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("IbnAlZumar.Domain.Entities.Catalog.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
@@ -2140,27 +1948,6 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasOne("IbnAlZumar.Domain.Entities.Inventory.Warehouse", "Warehouse")
                         .WithMany()
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("ProductBatch");
-
-                    b.Navigation("Warehouse");
-                });
-
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.ProductBatch", b =>
-                {
-                    b.HasOne("IbnAlZumar.Domain.Entities.Catalog.Product", "Product")
-                        .WithMany("ProductBatches")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("IbnAlZumar.Domain.Entities.Inventory.Warehouse", "Warehouse")
-                        .WithMany("ProductBatches")
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2225,16 +2012,6 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("StockTransfer");
-                });
-
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.Warehouse", b =>
-                {
-                    b.HasOne("IbnAlZumar.Domain.Entities.Inventory.Warehouse", "ParentWarehouse")
-                        .WithMany("ChildWarehouses")
-                        .HasForeignKey("ParentWarehouseId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ParentWarehouse");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", b =>
@@ -2459,13 +2236,9 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.Navigation("OrderItems");
 
-                    b.Navigation("ProductBatches");
-
                     b.Navigation("PurchaseOrderItems");
 
                     b.Navigation("Stocks");
-
-                    b.Navigation("UnitConversions");
 
                     b.Navigation("Variants");
                 });
@@ -2473,13 +2246,6 @@ namespace Ibn_alZumar.API.Migrations
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductAttributeDefinition", b =>
                 {
                     b.Navigation("ProductAttributeValues");
-
-                    b.Navigation("ProductVariantAttributeValues");
-                });
-
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductVariant", b =>
-                {
-                    b.Navigation("AttributeValues");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.Permission", b =>
@@ -2507,11 +2273,6 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.ProductBatch", b =>
-                {
-                    b.Navigation("InventoryTransactions");
-                });
-
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.StockTransfer", b =>
                 {
                     b.Navigation("Items");
@@ -2519,13 +2280,9 @@ namespace Ibn_alZumar.API.Migrations
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.Warehouse", b =>
                 {
-                    b.Navigation("ChildWarehouses");
-
                     b.Navigation("IncomingTransfers");
 
                     b.Navigation("OutgoingTransfers");
-
-                    b.Navigation("ProductBatches");
 
                     b.Navigation("ProductStocks");
                 });

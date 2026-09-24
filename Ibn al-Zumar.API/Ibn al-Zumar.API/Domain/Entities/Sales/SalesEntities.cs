@@ -115,6 +115,10 @@ public class Order : BaseEntity
     public decimal DiscountValue { get; set; } // percentage or fixed amount, per DiscountType
     public decimal DiscountAmount { get; set; } // computed, always in currency
 
+    // === الخواص الجديدة للقيمة المضافة (H-08) ===
+    public decimal TaxRate { get; set; }
+    public decimal TaxAmount { get; set; }
+
     public decimal TotalAmount { get; set; }
 
     [MaxLength(500)]

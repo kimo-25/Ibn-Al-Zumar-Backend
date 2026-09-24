@@ -63,11 +63,13 @@ namespace IbnAlZumar.API.Controllers
 
         /// <summary>
         /// إنشاء طلب جديد من متجر العملاء أو الكاشير (POS)
+        /// السعر والإجمالي يتم احتسابهما دائماً من السيرفر (لا يُعتمد على بيانات العميل) — انظر OrderService.CreateAsync
         /// </summary>
         [HttpPost]
-        [AllowAnonymous]
+        [Authorize] // C-01: order creation must be authenticated — never anonymous/[AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
         {

@@ -2,6 +2,7 @@
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.API.Services.Inventory;
 using IbnAlZumar.Domain.Entities.Inventory;
+using IbnAlZumar.Persistence.Seed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPost("adjust")]
+        [Authorize(Policy = DataSeeder.PermissionCodes.InventoryAdjust)]
         public async Task<ActionResult<StockTransactionResponseDto>> AdjustStock([FromBody] AdjustStockDto dto)
         {
             var result = await _inventoryService.AdjustStockAsync(dto);
@@ -30,9 +32,50 @@ namespace IbnAlZumar.API.Controllers
         }
 
         [HttpPost("transfer")]
+        [Authorize(Policy = DataSeeder.PermissionCodes.InventoryAdjust)]
         public async Task<ActionResult<StockTransactionResponseDto>> TransferStock([FromBody] TransferStockDto dto)
         {
             var result = await _inventoryService.TransferStockAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpPost("batches/receive")]
+        [Authorize(Policy = DataSeeder.PermissionCodes.InventoryManageBatches)]
+        public async Task<IActionResult> ReceiveBatch([FromBody] ReceiveBatchDto dto)
+        {
+            var result = await _inventoryService.ReceiveBatchAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpPost("batches/consume-fefo")]
+        [Authorize(Policy = DataSeeder.PermissionCodes.InventoryManageBatches)]
+        public async Task<IActionResult> ConsumeFefo([FromBody] ConsumeFefoDto dto)
+        {
+            var result = await _inventoryService.ConsumeFefoAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpGet("batches")]
+        [Authorize(Policy = DataSeeder.PermissionCodes.InventoryView)]
+        public async Task<IActionResult> GetBatches([FromQuery] int? productId, [FromQuery] int? warehouseId, [FromQuery] bool includeDepleted = false)
+        {
+            var result = await _inventoryService.GetBatchesAsync(productId, warehouseId, includeDepleted);
+            return Ok(result);
+        }
+
+        [HttpGet("batches/expiring")]
+        [Authorize(Policy = DataSeeder.PermissionCodes.InventoryView)]
+        public async Task<IActionResult> GetExpiringBatches([FromQuery] int withinDays = 30, [FromQuery] int? warehouseId = null)
+        {
+            var result = await _inventoryService.GetExpiringBatchesAsync(withinDays, warehouseId);
+            return Ok(result);
+        }
+
+        [HttpGet("warehouses/hierarchy")]
+        [Authorize(Policy = DataSeeder.PermissionCodes.InventoryView)]
+        public async Task<IActionResult> GetWarehouseHierarchy()
+        {
+            var result = await _inventoryService.GetWarehouseHierarchyAsync();
             return Ok(result);
         }
 

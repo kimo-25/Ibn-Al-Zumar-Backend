@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using IbnAlZumar.Domain.Common;
 using IbnAlZumar.Domain.Entities.Catalog;
 using IbnAlZumar.Domain.Entities.Sales;
@@ -10,6 +11,10 @@ namespace IbnAlZumar.Domain.Entities.Inventory;
 /// Physical or logical stock location. Phase 1 only ever uses Id = 1 ("Main Warehouse"),
 /// seeded via HasData in ApplicationDbContext so it's always safe to reference.
 /// Phase 2 (multi-warehouse, transfers) just adds more rows — no schema change needed.
+///
+/// Sheet 1: now supports a 3-tier hierarchy (MainCentral -> RegionalBranch -> PosShelfLocation)
+/// via <see cref="Tier"/> and the self-referencing <see cref="ParentWarehouseId"/>. Warehouse Id = 1
+/// remains the seeded, always-valid MainCentral default — its ParentWarehouseId stays null.
 /// </summary>
 public class Warehouse : BaseEntity
 {
@@ -22,7 +27,20 @@ public class Warehouse : BaseEntity
     public bool IsMainWarehouse { get; set; } = false;
     public bool IsActive { get; set; } = true;
 
+    /// <summary>Where this warehouse sits in the 3-tier hierarchy. Defaults to MainCentral.</summary>
+    public WarehouseTier Tier { get; set; } = WarehouseTier.MainCentral;
+
+    /// <summary>
+    /// Self-referencing FK. Null for a top-level MainCentral warehouse. A RegionalBranch's parent
+    /// must be a MainCentral; a PosShelfLocation's parent must be a RegionalBranch (or a MainCentral
+    /// for small single-branch setups). Enforced in service logic — see InventoryService.
+    /// </summary>
+    public int? ParentWarehouseId { get; set; }
+    public Warehouse? ParentWarehouse { get; set; }
+    public ICollection<Warehouse> ChildWarehouses { get; set; } = new List<Warehouse>();
+
     public ICollection<ProductStock> ProductStocks { get; set; } = new List<ProductStock>();
+    public ICollection<ProductBatch> ProductBatches { get; set; } = new List<ProductBatch>();
     public ICollection<StockTransfer> OutgoingTransfers { get; set; } = new List<StockTransfer>();
     public ICollection<StockTransfer> IncomingTransfers { get; set; } = new List<StockTransfer>();
 }
@@ -68,6 +86,14 @@ public class InventoryTransaction : BaseEntity
     public string? ReferenceType { get; set; }
     public int? ReferenceId { get; set; }
 
+    /// <summary>
+    /// Sheet 1: which batch this movement was drawn from/into, when the product tracks batches.
+    /// Null for products that don't use batch tracking, or for movements not attributable to a
+    /// single batch (e.g. pre-batch-tracking history).
+    /// </summary>
+    public int? ProductBatchId { get; set; }
+    public ProductBatch? ProductBatch { get; set; }
+
     public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
 
     [MaxLength(500)]
@@ -103,4 +129,46 @@ public class StockTransferItem : BaseEntity
     public Product Product { get; set; } = null!;
 
     public int Quantity { get; set; }
+}
+
+/// <summary>
+/// Sheet 1: a received/registered lot of a product with its own expiry, production date and cost.
+/// Consumed FEFO (First-Expired-First-Out) on sale/adjustment via InventoryService.ConsumeFefoAsync.
+/// RemainingQuantity is the source of truth for "how much of this specific batch is left" — it must
+/// only ever change alongside a matching InventoryTransaction row (same invariant as ProductStock).
+/// </summary>
+public class ProductBatch : BaseEntity
+{
+    public int ProductId { get; set; }
+    public Product Product { get; set; } = null!;
+
+    [Required, MaxLength(100)]
+    public string BatchNumber { get; set; } = string.Empty;
+
+    public int WarehouseId { get; set; }
+    public Warehouse Warehouse { get; set; } = null!;
+
+    /// <summary>
+    /// Optional — where this batch came from. For legacy/historical stock registered without a
+    /// formal Purchase Order, this points at the seeded Opening Balance Supplier
+    /// (see DataSeeder.OpeningBalanceSupplierId).
+    /// </summary>
+    public int? SupplierId { get; set; }
+
+    public DateTime? ProductionDate { get; set; }
+    public DateTime ExpiryDate { get; set; }
+
+    public int InitialQuantity { get; set; }
+    public int RemainingQuantity { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal CostPrice { get; set; }
+
+    public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
+
+    [NotMapped]
+    public bool IsDepleted => RemainingQuantity <= 0;
+
+    [NotMapped]
+    public bool IsExpired => ExpiryDate.Date < DateTime.UtcNow.Date;
 }
