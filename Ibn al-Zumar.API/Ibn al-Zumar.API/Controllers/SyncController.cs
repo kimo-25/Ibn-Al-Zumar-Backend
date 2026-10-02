@@ -225,7 +225,7 @@ public class SyncController : ControllerBase
         {
             DiscountType.Percentage => Math.Round(baseAmount * (value / 100m), 2),
             DiscountType.None => 0m,
-            _ => Math.Min(value, baseAmount), // يتعامل مع الخصم الثابت بغض النظر عن اسم الـ Enum (Fixed / FixedAmount)
+            _ => Math.Min(value, baseAmount),
         };
 
     private static SyncResultDto Failure(string clientUuid, string code, string message) => new()

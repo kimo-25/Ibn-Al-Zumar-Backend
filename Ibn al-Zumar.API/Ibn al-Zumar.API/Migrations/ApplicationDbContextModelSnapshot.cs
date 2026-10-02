@@ -126,7 +126,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("UserId", "CheckInTime");
 
-                    b.ToTable("AttendanceLogs", (string)null);
+                    b.ToTable("AttendanceLogs");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Attendance.PayrollRecord", b =>
@@ -172,7 +172,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PayrollRecords", (string)null);
+                    b.ToTable("PayrollRecords");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.Brand", b =>
@@ -603,7 +603,7 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("ProductVariantId", "ProductAttributeDefinitionId")
                         .IsUnique();
 
-                    b.ToTable("ProductVariantAttributeValue", (string)null);
+                    b.ToTable("ProductVariantAttributeValue");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.UnitConversion", b =>
@@ -648,7 +648,7 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("ProductId", "FromUnit")
                         .IsUnique();
 
-                    b.ToTable("UnitConversion", (string)null);
+                    b.ToTable("UnitConversion");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.Permission", b =>
@@ -999,7 +999,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("ProductId", "WarehouseId", "ExpiryDate");
 
-                    b.ToTable("ProductBatch", (string)null);
+                    b.ToTable("ProductBatch");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.ProductStock", b =>
@@ -1170,7 +1170,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("Tier");
 
-                    b.ToTable("Warehouses", (string)null);
+                    b.ToTable("Warehouses");
 
                     b.HasData(
                         new
@@ -1356,7 +1356,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("MaintenanceRequests", (string)null);
+                    b.ToTable("MaintenanceRequests");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Notifications.NotificationLog", b =>
@@ -1634,7 +1634,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("SupplierId", "TransactionDate");
 
-                    b.ToTable("SupplierLedgerEntries", (string)null);
+                    b.ToTable("SupplierLedgerEntries");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.SupplierPayment", b =>
@@ -1685,7 +1685,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("SupplierId", "PaymentDate");
 
-                    b.ToTable("SupplierPayments", (string)null);
+                    b.ToTable("SupplierPayments");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Reminders.Reminder", b =>
@@ -1726,7 +1726,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reminders", (string)null);
+                    b.ToTable("Reminders");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.Customer", b =>
@@ -2295,7 +2295,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ShippingZones", (string)null);
+                    b.ToTable("ShippingZones");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Attendance.AttendanceLog", b =>

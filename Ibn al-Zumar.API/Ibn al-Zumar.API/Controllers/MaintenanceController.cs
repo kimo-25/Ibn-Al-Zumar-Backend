@@ -96,7 +96,7 @@ public class MaintenanceController : ControllerBase
     }
 
     // application/json path (no files) — prevents 415 for JSON requests from POS/frontends
-    [HttpPost]
+    [HttpPost("json")]
     [Authorize]
     [Consumes("application/json")]
     public async Task<IActionResult> CreateRequestJson([FromBody] CreateMaintenanceRequestDto dto)
