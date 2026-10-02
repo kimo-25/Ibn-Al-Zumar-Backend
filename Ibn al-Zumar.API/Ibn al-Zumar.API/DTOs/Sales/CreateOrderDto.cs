@@ -1,5 +1,4 @@
-﻿// File: IbnAlZumar.API/DTOs/Sales/CreateOrderDto.cs
-using IbnAlZumar.Domain.Enums;
+﻿using IbnAlZumar.Domain.Enums;
 
 namespace IbnAlZumar.API.DTOs.Sales
 {
@@ -12,7 +11,6 @@ namespace IbnAlZumar.API.DTOs.Sales
         public int? ShippingZoneId { get; set; }
         public string? Notes { get; set; }
 
-        // --- حقول المنطقة الجديدة المطلوبة من العميل ---
         public bool IsCustomZoneRequested { get; set; }
         public string? CustomZoneName { get; set; }
 
@@ -23,12 +21,15 @@ namespace IbnAlZumar.API.DTOs.Sales
         public decimal DiscountValue { get; set; } = 0;
         public int? CustomerId { get; set; }
 
+        public PricingTierType PricingTier { get; set; } = PricingTierType.Retail; // 👈 أضفنا شريحة السعر للطلب
+
         public List<CreateOrderItemDto> Items { get; set; } = new();
     }
 
     public class CreateOrderItemDto
     {
         public int ProductId { get; set; }
+        public int? ProductVariantId { get; set; } // 👈 أضفنا معرف المتغير الفرعي بالعنصر
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
     }

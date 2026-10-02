@@ -22,6 +22,21 @@ public enum OrderStatus
     CancellationRequested = 11 // تمت الإضافة لطلب الإلغاء
 }
 
+// --- Notification enums required by NotificationLog & NotificationSender ---
+public enum NotificationChannel
+{
+    WhatsApp = 1,
+    Email = 2,
+    Sms = 3
+}
+
+public enum NotificationStatus
+{
+    Pending = 1,
+    Sent = 2,
+    Failed = 3
+}
+
 /// <summary>
 /// CustomerCredit represents a sale on debt ("الشكك") — increases the customer's CurrentBalance
 /// instead of collecting cash at the time of sale.
@@ -45,10 +60,6 @@ public enum PaymentStatus
     CodPending = 4
 }
 
-/// <summary>
-/// Method used to pay a supplier. Kept separate from Sales PaymentMethod
-/// so Purchasing accounting can evolve independently (e.g. Cheque is supplier-specific).
-/// </summary>
 public enum SupplierPaymentMethod
 {
     Cash = 1,
@@ -56,21 +67,11 @@ public enum SupplierPaymentMethod
     Cheque = 3
 }
 
-/// <summary>
-/// Nature of a movement on a Supplier's statement of account.
-/// </summary>
 public enum SupplierLedgerTransactionType
 {
-    /// <summary>Supplier invoiced us (Purchase Order received) — increases what we owe.</summary>
     PurchaseInvoice = 1,
-
-    /// <summary>We paid the supplier — decreases what we owe.</summary>
     Payment = 2,
-
-    /// <summary>Manual correction to the balance (damaged goods, pricing error, etc.).</summary>
     Adjustment = 3,
-
-    /// <summary>Supplier refunded us — decreases what we owe.</summary>
     Refund = 4
 }
 
@@ -90,21 +91,33 @@ public enum PurchaseOrderStatus
     Cancelled = 5
 }
 
-/// <summary>Every stock movement in or out of a warehouse is logged with one of these types.</summary>
 public enum InventoryTransactionType
 {
     PurchaseReceived = 1,
-    Purchase = 1,          // مرادف جديد متوافق مع الكود الجديد
+    PurchaseReceive = 1,
+    Purchase = 1,
+
     SaleDeducted = 2,
-    Sale = 2,              // مرادف جديد متوافق مع الكود الجديد
+    SalesDeduct = 2,
+    Sale = 2,
+
     TransferOut = 3,
     TransferIn = 4,
+
     AdjustmentIncrease = 5,
-    Adjustment = 5,        // مرادف جديد متوافق مع الكود الجديد
+    Adjustment = 5,
+
     AdjustmentDecrease = 6,
+
     CustomerReturn = 7,
-    Return = 7,            // مرادف جديد متوافق مع الكود الجديد
-    SupplierReturn = 8
+    Return = 7,
+    BatchReceived = 7,
+
+    SupplierReturn = 8,
+    BatchConsumed = 8,
+
+    // Phase 2 Spare Part Consumption
+    MaintenanceUsed = 9
 }
 
 public enum StockTransferStatus
@@ -115,18 +128,55 @@ public enum StockTransferStatus
     Cancelled = 4
 }
 
-/// <summary>
-/// Drives the customer debt ledger ("الشكك"): SaleOnCredit increases CurrentBalance,
-/// PaymentReceived decreases it.
-/// </summary>
-public enum LedgerTransactionType
+public enum TotalSaleType
 {
-    SaleOnCredit = 1,
-    PaymentReceived = 2,
-    ManualAdjustment = 3
+    Invoice = 1,
+    Return = 2
 }
 
-/// <summary>Tells the UI/API how to parse and render a dynamic product attribute's Value string.</summary>
+public enum InventoryAdjustmentStatus
+{
+    Pending = 1,
+    Completed = 2,
+    Cancelled = 3
+}
+
+// --- Added enums to fix CS0246 / CS0103 missing-type errors across the solution ---
+
+public enum MaintenanceStatus
+{
+    Pending = 1,
+    Priced = 2,
+    Approved = 3,
+    Rejected = 4,
+    Completed = 5,
+    // Phase 2 repair-shop states
+    InDiagnostics = 6,
+    AwaitingParts = 7,
+    InRepair = 8,
+    Delivered = 9,
+    Cancelled = 10
+}
+
+public enum DeliveryMethod
+{
+    CustomerDropOff = 1,
+    CompanyPickup = 2
+}
+
+public enum ReminderType
+{
+    Quran = 1,
+    Dhikr = 2
+}
+
+public enum WarehouseTier
+{
+    MainCentral = 1,
+    RegionalBranch = 2,
+    PosShelfLocation = 3
+}
+
 public enum AttributeDataType
 {
     Text = 1,
@@ -134,30 +184,6 @@ public enum AttributeDataType
     Boolean = 3
 }
 
-/// <summary>Determines whether the reminder is a Quranic Ayah or an Islamic Dhikr.</summary>
-public enum ReminderType
-{
-    Quran = 1,
-    Dhikr = 2
-}
-
-// ================= قسم الصيانة =================
-public enum MaintenanceStatus
-{
-    Pending = 1,          // قيد المراجعة
-    Priced = 2,           // تم التسعير (في انتظار موافقة العميل)
-    Approved = 3,         // العميل وافق
-    Rejected = 4,         // مرفوض
-    Completed = 5         // تم الانتهاء
-}
-
-public enum DeliveryMethod
-{
-    CustomerDropOff = 1,  // العميل هيجيب الجهاز المحل
-    CompanyPickup = 2     // الشركة هتبعت مندوب
-}
-
-// ================= تمت الإضافة لطلب مناطق الشحن الجديدة =================
 public enum CustomZoneRequestStatus
 {
     None = 0,
@@ -166,15 +192,17 @@ public enum CustomZoneRequestStatus
     Rejected = 3
 }
 
-// ================= Sheet 1: Multi-Warehouse Hierarchy =================
-/// <summary>
-/// 3-tier warehouse hierarchy. MainCentral is top-level (ParentWarehouseId == null),
-/// RegionalBranch hangs off a MainCentral, PosShelfLocation hangs off a RegionalBranch
-/// (or, for small setups, directly off a MainCentral).
-/// </summary>
-public enum WarehouseTier
+public enum LedgerTransactionType
 {
-    MainCentral = 1,
-    RegionalBranch = 2,
-    PosShelfLocation = 3
+    SaleOnCredit = 1,
+    PaymentReceived = 2,
+    ManualAdjustment = 3
+}
+
+public enum PricingTierType
+{
+    Retail = 1,
+    Wholesale = 2,
+    FirstWholesale = 3,
+    Distributor = 4
 }

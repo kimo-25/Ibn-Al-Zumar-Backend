@@ -26,6 +26,7 @@ public class MaintenanceController : ControllerBase
         _environment = environment;
     }
 
+    // multipart/form-data (file upload) path
     [HttpPost]
     [Authorize]
     [Consumes("multipart/form-data")]
@@ -70,12 +71,63 @@ public class MaintenanceController : ControllerBase
             imageUrls.Add($"uploads/maintenance/{uniqueName}");
         }
 
+        // explicit DeliveryMethod parsing to only accept 1 or 2; default to CustomerDropOff
+        var deliveryMethod = dto.DeliveryMethod == 1
+            ? DeliveryMethod.CustomerDropOff
+            : dto.DeliveryMethod == 2
+                ? DeliveryMethod.CompanyPickup
+                : DeliveryMethod.CustomerDropOff;
+
         var request = new MaintenanceRequest
         {
             UserId = userId,
             CustomerId = customerId,
             ProblemDescription = dto.Description,
-            DeliveryMethod = (DeliveryMethod)dto.DeliveryMethod,
+            DeliveryMethod = deliveryMethod,
+            ImageUrl = imageUrls.FirstOrDefault(),
+            ImageUrls = imageUrls,
+            Status = MaintenanceStatus.Pending
+        };
+
+        _context.MaintenanceRequests.Add(request);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "تم إرسال طلب الصيانة بنجاح وسيتم تحديد السعر والموعد قريباً." });
+    }
+
+    // application/json path (no files) — prevents 415 for JSON requests from POS/frontends
+    [HttpPost]
+    [Authorize]
+    [Consumes("application/json")]
+    public async Task<IActionResult> CreateRequestJson([FromBody] CreateMaintenanceRequestDto dto)
+    {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        int? userId = int.TryParse(userIdStr, out int parsedId) ? parsedId : null;
+
+        int? customerId = null;
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        if (!string.IsNullOrEmpty(userEmail))
+        {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Email != null && c.Email.ToLower() == userEmail.ToLower());
+            customerId = customer?.Id;
+        }
+
+        var imageUrls = new List<string>(); // JSON endpoint has no files
+
+        // explicit DeliveryMethod parsing to only accept 1 or 2; default to CustomerDropOff
+        var deliveryMethod = dto.DeliveryMethod == 1
+            ? DeliveryMethod.CustomerDropOff
+            : dto.DeliveryMethod == 2
+                ? DeliveryMethod.CompanyPickup
+                : DeliveryMethod.CustomerDropOff;
+
+        var request = new MaintenanceRequest
+        {
+            UserId = userId,
+            CustomerId = customerId,
+            ProblemDescription = dto.Description,
+            DeliveryMethod = deliveryMethod,
             ImageUrl = imageUrls.FirstOrDefault(),
             ImageUrls = imageUrls,
             Status = MaintenanceStatus.Pending

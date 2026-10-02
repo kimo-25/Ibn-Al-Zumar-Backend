@@ -1,18 +1,23 @@
-﻿using IbnAlZumar.API.DTOs.Catalog; 
-using IbnAlZumar.Api.Common.Helpers;
+﻿using IbnAlZumar.Api.Common.Helpers;
+using IbnAlZumar.API.Common.Helpers;
+using IbnAlZumar.API.DTOs.Catalog;
 using IbnAlZumar.API.Persistence;
+using IbnAlZumar.API.Services.Catalog;
 using IbnAlZumar.Domain.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
+using Services.Sales;
 
 namespace IbnAlZumar.Api.Services.Catalog;
 
 public class CategoryService : ICategoryService
 {
     private readonly ApplicationDbContext _context;
+    private readonly ITranslationService _translationService; // 👈 حاقن خدمة الترجمة
 
-    public CategoryService(ApplicationDbContext context)
+    public CategoryService(ApplicationDbContext context, ITranslationService translationService)
     {
         _context = context;
+        _translationService = translationService;
     }
 
     public async Task<IEnumerable<CategoryResponseDto>> GetAllAsync()
@@ -56,10 +61,15 @@ public class CategoryService : ICategoryService
             ? SlugHelper.GenerateSlug(dto.Name)
             : SlugHelper.GenerateSlug(dto.Slug);
 
+        // 👈 إضافة الترجمة التلقائية للقسم
+        var (name, nameAr, autoTranslated) = await TranslationHelper.FillMissingSideAsync(
+            _translationService, dto.Name, dto.NameAr);
+
         var category = new Category
         {
-            Name = dto.Name,
-            NameAr = dto.NameAr,
+            Name = name ?? dto.Name,
+            NameAr = nameAr,
+            IsAutoTranslated = autoTranslated,
             Description = dto.Description,
             Slug = slug,
             ParentCategoryId = dto.ParentCategoryId

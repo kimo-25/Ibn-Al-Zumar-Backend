@@ -1,23 +1,26 @@
-﻿using System.Linq.Expressions;
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using IbnAlZumar.API.Common.Exceptions;
+using IbnAlZumar.API.Common.Helpers;
 using IbnAlZumar.API.DTOs.Catalog;
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.Domain.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
+using Services.Sales;
+using System.Linq.Expressions;
 
 namespace IbnAlZumar.API.Services.Catalog;
 
 public class ProductService : IProductService
 {
     private readonly ApplicationDbContext _context;
+    private readonly ITranslationService _translationService; // 👈 حاقن خدمة الترجمة
 
-    public ProductService(ApplicationDbContext context)
+    public ProductService(ApplicationDbContext context, ITranslationService translationService)
     {
         _context = context;
+        _translationService = translationService;
     }
 
-    // Projection expression used by queries to avoid loading entire entity graph
     private static readonly Expression<Func<Product, ProductResponseDto>> ProjectToDto = static p => new ProductResponseDto
     {
         Id = p.Id,
@@ -65,8 +68,6 @@ public class ProductService : IProductService
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
-            // Normalize the input in .NET, then normalize the searchable columns in SQL.
-            // The chained Replace calls are translated by EF Core to SQL REPLACE calls.
             var term = NormalizeArabic(filter.SearchTerm);
             var pattern = $"%{EscapeLikePattern(term)}%";
 
@@ -103,7 +104,6 @@ public class ProductService : IProductService
         if (filter.IsActive.HasValue)
             query = query.Where(p => p.IsActive == filter.IsActive.Value);
 
-        // Sorting
         query = (filter.SortBy?.ToLower(), filter.SortDescending) switch
         {
             ("name", false) => query.OrderBy(p => p.Name),
@@ -142,7 +142,6 @@ public class ProductService : IProductService
             .Replace("ى", "ي");
     }
 
-
     private static string EscapeLikePattern(string value)
     {
         return value.Replace("[", "[[]").Replace("%", "[%]").Replace("_", "[_]");
@@ -170,12 +169,17 @@ public class ProductService : IProductService
     {
         await EnsureSkuIsUniqueAsync(dto.SKU);
 
+        // 👈 الترجمة التلقائية قبل الحفظ عند عدم توفر أحد الاسمين
+        var (name, nameAr, autoTranslated) = await TranslationHelper.FillMissingSideAsync(
+            _translationService, dto.Name, dto.NameAr);
+
         var product = new Product
         {
             SKU = dto.SKU.Trim(),
             Barcode = dto.Barcode?.Trim(),
-            Name = dto.Name.Trim(),
-            NameAr = dto.NameAr?.Trim(),
+            Name = name ?? dto.Name.Trim(),
+            NameAr = nameAr,
+            IsAutoTranslated = autoTranslated,
             Description = dto.Description,
             SellingPrice = dto.SellingPrice,
             CurrentCostPrice = dto.CurrentCostPrice ?? 0m,
@@ -304,9 +308,6 @@ public class ProductService : IProductService
         await _context.SaveChangesAsync();
     }
 
-    // ==========================================
-    // Bulk Import Implementation (Excel)
-    // ==========================================
     public async Task<BulkImportResultDto> BulkImportAsync(Stream fileStream)
     {
         var result = new BulkImportResultDto();
@@ -314,7 +315,7 @@ public class ProductService : IProductService
         using var workbook = new XLWorkbook(fileStream);
         var worksheet = workbook.Worksheets.FirstOrDefault();
         if (worksheet is null)
-            throw new BadRequestException("الملف لا يحتوي على أي ورقة عمل (Sheet) صالحة.");
+            throw new BadRequestException("الملف لا يحتوي على أي ورقة عمل صالحة.");
 
         var columnMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var cell in worksheet.Row(1).CellsUsed())
@@ -327,9 +328,7 @@ public class ProductService : IProductService
         string[] requiredColumns = { "SKU", "Name", "SellingPrice", "CategoryId" };
         var missingColumns = requiredColumns.Where(c => !columnMap.ContainsKey(c)).ToList();
         if (missingColumns.Count > 0)
-            throw new BadRequestException(
-                $"الأعمدة الإلزامية التالية مفقودة من الملف: {string.Join(", ", missingColumns)}. " +
-                "من فضلك استخدم قالب الاكسل الرسمي.");
+            throw new BadRequestException($"الأعمدة الإلزامية مفقودة: {string.Join(", ", missingColumns)}.");
 
         int Col(string name) => columnMap.TryGetValue(name, out var idx) ? idx : -1;
 
@@ -405,7 +404,6 @@ public class ProductService : IProductService
                     quantityPerCarton = qty;
             }
 
-            // 👈 قراءة MinStockThreshold من الإكسيل وإلا وضع 0 افتراضياً
             int minStockThreshold = 0;
             var minStockCol = Col("MinStockThreshold");
             if (minStockCol != -1 && !row.Cell(minStockCol).IsEmpty())
@@ -462,7 +460,7 @@ public class ProductService : IProductService
                 SellingPrice = sellingPrice,
                 CurrentCostPrice = currentCostPrice,
                 QuantityPerCarton = quantityPerCarton,
-                MinStockThreshold = minStockThreshold, // 👈 تم إضافة الحقل هنا
+                MinStockThreshold = minStockThreshold,
                 IsActive = isActive,
                 TrackInventory = trackInventory,
                 CategoryId = categoryId,

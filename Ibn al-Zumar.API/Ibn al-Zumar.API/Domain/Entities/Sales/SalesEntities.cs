@@ -7,11 +7,6 @@ using IbnAlZumar.Domain.Enums;
 
 namespace IbnAlZumar.Domain.Entities.Sales;
 
-/// <summary>
-/// A "real" customer record — used for registered online accounts AND for walk-in customers
-/// the cashier chooses to save (e.g. for warranty tracking or to run a debt tab).
-/// True anonymous, one-off checkouts don't need a Customer row at all: see Order.GuestName/GuestPhone.
-/// </summary>
 public class Customer : BaseEntity
 {
     [Required, MaxLength(150)]
@@ -29,30 +24,22 @@ public class Customer : BaseEntity
     [MaxLength(100)]
     public string? Governorate { get; set; }
 
-    /// <summary>True for accounts created via online registration/login; false for quick walk-in records.</summary>
     public bool IsRegistered { get; set; } = true;
 
     public decimal CreditLimit { get; set; } = 0;
 
-    /// <summary>Positive = customer owes the store ("الشكك"). Kept in sync via CustomerLedgerEntry rows.</summary>
     public decimal CurrentBalance { get; set; } = 0;
+
+    // 👈 إضافة الشريحة الافتراضية للعميل
+    public PricingTierType DefaultPricingTier { get; set; } = PricingTierType.Retail;
 
     public ICollection<Order> Orders { get; set; } = new List<Order>();
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public ICollection<CustomerLedgerEntry> LedgerEntries { get; set; } = new List<CustomerLedgerEntry>();
 }
 
-/// <summary>
-/// Works for both an online COD order and an in-store POS sale — Source/PaymentMethod/CashierUserId
-/// distinguish the two, so no separate "OnlineOrder"/"POSSale" tables are needed.
-/// </summary>
 public class Order : BaseEntity
 {
-    /// <summary>
-    /// GUID generated client-side (offline) at creation time. Used as the idempotency
-    /// key for /api/orders/sync so a retried batch never creates duplicate orders.
-    /// Null for orders created normally (online, non-synced flow).
-    /// </summary>
     [MaxLength(64)]
     public string? ClientUuid { get; set; }
 
@@ -62,7 +49,6 @@ public class Order : BaseEntity
     public int? CustomerId { get; set; }
     public Customer? Customer { get; set; }
 
-    /// <summary>Used when there is no Customer row at all (anonymous online COD or quick POS sale).</summary>
     [MaxLength(150)]
     public string? GuestName { get; set; }
 
@@ -74,19 +60,20 @@ public class Order : BaseEntity
     public PaymentMethod PaymentMethod { get; set; }
     public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.CodPending;
 
+    // 👈 إضافة شريحة التسعير المطبقة على الفاتورة
+    public PricingTierType PricingTier { get; set; } = PricingTierType.Retail;
+
     [MaxLength(100)]
     public string? PaymobOrderId { get; set; }
 
     [MaxLength(100)]
     public string? PaymobTransactionId { get; set; }
 
-    /// <summary>Fulfilling warehouse. Defaults to Id = 1 in Phase 1; picked explicitly in Phase 2 POS.</summary>
     public int WarehouseId { get; set; }
 
     [Required]
     public Warehouse Warehouse { get; set; } = null!;
 
-    /// <summary>Null for online orders in Phase 1; set to the logged-in cashier for Phase 2 POS sales.</summary>
     public int? CashierUserId { get; set; }
     public User? CashierUser { get; set; }
 
@@ -101,7 +88,6 @@ public class Order : BaseEntity
 
     public ShippingZone? ShippingZone { get; set; }
 
-    // ================= طلب منطقة شحن جديدة من العميل =================
     public bool IsCustomZoneRequested { get; set; } = false;
 
     [MaxLength(150)]
@@ -112,10 +98,9 @@ public class Order : BaseEntity
     public decimal SubTotal { get; set; }
 
     public DiscountType DiscountType { get; set; } = DiscountType.None;
-    public decimal DiscountValue { get; set; } // percentage or fixed amount, per DiscountType
-    public decimal DiscountAmount { get; set; } // computed, always in currency
+    public decimal DiscountValue { get; set; }
+    public decimal DiscountAmount { get; set; }
 
-    // === الخواص الجديدة للقيمة المضافة (H-08) ===
     public decimal TaxRate { get; set; }
     public decimal TaxAmount { get; set; }
 
@@ -124,7 +109,6 @@ public class Order : BaseEntity
     [MaxLength(500)]
     public string? Notes { get; set; }
 
-    // تمت الإضافة هنا لسبب الإلغاء
     [MaxLength(500)]
     public string? CancellationReason { get; set; }
 
@@ -142,8 +126,13 @@ public class OrderItem : BaseEntity
     [Required]
     public Product Product { get; set; } = null!;
 
+    public int? ProductVariantId { get; set; }
+
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
+
+    // New: store the unit cost price (for profit / cost analysis)
+    public decimal UnitCostPrice { get; set; }
 
     public DiscountType DiscountType { get; set; } = DiscountType.None;
     public decimal DiscountValue { get; set; }
@@ -152,10 +141,6 @@ public class OrderItem : BaseEntity
     public decimal LineTotal { get; set; }
 }
 
-/// <summary>
-/// A cash/card/InstaPay movement — can settle an Order in full at checkout, OR be a later,
-/// standalone debt collection against a Customer (OrderId null, CustomerId set).
-/// </summary>
 public class Payment : BaseEntity
 {
     public int? OrderId { get; set; }
@@ -180,11 +165,6 @@ public class Payment : BaseEntity
     public string? Notes { get; set; }
 }
 
-/// <summary>
-/// Append-only debt ledger ("الشكك"). Every SaleOnCredit / PaymentReceived / ManualAdjustment
-/// writes one row here; Customer.CurrentBalance is the running total, RunningBalance is the
-/// snapshot after this specific entry (useful for printing a statement).
-/// </summary>
 public class CustomerLedgerEntry : BaseEntity
 {
     public int CustomerId { get; set; }
@@ -193,7 +173,6 @@ public class CustomerLedgerEntry : BaseEntity
 
     public LedgerTransactionType TransactionType { get; set; }
 
-    /// <summary>Always positive; sign/effect is implied by TransactionType.</summary>
     public decimal Amount { get; set; }
 
     public decimal RunningBalance { get; set; }

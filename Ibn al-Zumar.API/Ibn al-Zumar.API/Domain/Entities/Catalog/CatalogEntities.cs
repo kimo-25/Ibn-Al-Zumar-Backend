@@ -19,6 +19,10 @@ public class Category : BaseEntity
     [Required, MaxLength(160)]
     public string Slug { get; set; } = string.Empty;
 
+    // NEW (Phase 1 — auto-translation helper, ARCHITECTURE.md §5.2c): same rule as
+    // Product.IsAutoTranslated — set once, on create, and never overwritten by a re-run.
+    public bool IsAutoTranslated { get; set; } = false;
+
     public int? ParentCategoryId { get; set; }
     public Category? ParentCategory { get; set; }
 
@@ -109,6 +113,11 @@ public class ProductVariant : BaseEntity
     /// catalog as Product-level attributes so filters/facets stay consistent.
     /// </summary>
     public ICollection<ProductVariantAttributeValue> AttributeValues { get; set; } = new List<ProductVariantAttributeValue>();
+
+    // NEW (Phase 1 — PricingTier, ARCHITECTURE.md §3.3): variant-level price-break overrides.
+    // A ProductPrice row with ProductVariantId set to this variant's Id takes precedence over
+    // the product-level (ProductVariantId == null) row for the same Tier/MinQuantity.
+    public ICollection<ProductPrice> Prices { get; set; } = new List<ProductPrice>();
 }
 
 /// <summary>

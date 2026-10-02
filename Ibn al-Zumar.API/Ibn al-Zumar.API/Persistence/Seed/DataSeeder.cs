@@ -46,6 +46,10 @@ public static class DataSeeder
         public const string CustomersManage = "Customers.Manage";
         public const string CustomersManageDebt = "Customers.ManageDebt";
 
+        // ---- Phase 2 Maintenance Permissions ----
+        public const string MaintenanceView = "Maintenance.View";
+        public const string MaintenanceManage = "Maintenance.Manage";
+
         public const string UsersManage = "Users.Manage";
         public const string RolesManage = "Roles.Manage";
         public const string PermissionsManage = "Permissions.Manage";
@@ -73,6 +77,8 @@ public static class DataSeeder
             (CustomersView, "View Customers", "Customers"),
             (CustomersManage, "Create/Edit Customers", "Customers"),
             (CustomersManageDebt, "Manage Customer Debt (الشكك)", "Customers"),
+            (MaintenanceView, "View Maintenance Requests & Kanban", "Maintenance"),
+            (MaintenanceManage, "Manage Maintenance Workflow, Parts & Tech Assignment", "Maintenance"),
             (UsersManage, "Manage Users", "Administration"),
             (RolesManage, "Manage Roles", "Administration"),
             (PermissionsManage, "Manage Role/User Permissions", "Administration"),
@@ -175,7 +181,8 @@ public static class DataSeeder
         {
             PermissionCodes.ProductsView, PermissionCodes.ProductsCreate, PermissionCodes.ProductsEdit,
             PermissionCodes.ProductsDelete, PermissionCodes.CategoriesManage, PermissionCodes.CustomersView,
-            PermissionCodes.CustomersManage, PermissionCodes.OrdersView, PermissionCodes.OrdersCreate, PermissionCodes.OrdersEdit
+            PermissionCodes.CustomersManage, PermissionCodes.OrdersView, PermissionCodes.OrdersCreate, PermissionCodes.OrdersEdit,
+            PermissionCodes.MaintenanceView, PermissionCodes.MaintenanceManage
         };
 
         var existingModeratorIds = (await context.RolePermissions
@@ -191,7 +198,8 @@ public static class DataSeeder
         var cashierCodes = new[]
         {
             PermissionCodes.ProductsView, PermissionCodes.InventoryView, PermissionCodes.OrdersView,
-            PermissionCodes.OrdersCreate, PermissionCodes.CustomersView, PermissionCodes.CustomersManage
+            PermissionCodes.OrdersCreate, PermissionCodes.CustomersView, PermissionCodes.CustomersManage,
+            PermissionCodes.MaintenanceView
         };
 
         var existingCashierIds = (await context.RolePermissions
@@ -408,8 +416,16 @@ public static class DataSeeder
 
     private static async Task SeedOpeningBalanceSupplierAsync(ApplicationDbContext context, ILogger logger)
     {
-        if (await context.Set<Supplier>().AnyAsync(s => s.Id == OpeningBalanceSupplierId))
+        // First, check existence while ignoring global soft-delete filters.
+        var exists = await context.Set<Supplier>()
+            .IgnoreQueryFilters()
+            .AnyAsync(s => s.Id == OpeningBalanceSupplierId || s.TaxId == "OPENING-BALANCE");
+
+        if (exists)
+        {
+            logger.LogInformation("Opening Balance Supplier with Id={Id} or TaxId=OPENING-BALANCE already exists. Skipping seed.", OpeningBalanceSupplierId);
             return;
+        }
 
         var supplier = new Supplier
         {
@@ -426,23 +442,38 @@ public static class DataSeeder
             IsDeleted = false
         };
 
-        await using var dbTransaction = await context.Database.BeginTransactionAsync();
+        // No explicit EF transaction here: keep operations simple during App Service startup.
+        var identityInserted = false;
         try
         {
-            // استخدام ExecuteSqlRawAsync مع نصوص ثابتة بدون Interpolation لحل الـ Warnings تماماً
-            await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT dbo.Suppliers ON");
+            // Enable IDENTITY_INSERT so we can insert a row with an explicit Id.
+            await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT dbo.Suppliers ON;");
+            identityInserted = true;
+
             context.Set<Supplier>().Add(supplier);
             await context.SaveChangesAsync();
-            await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT dbo.Suppliers OFF");
-            await dbTransaction.CommitAsync();
 
             logger.LogInformation("Seeded Opening Balance Supplier (مورد أول المدة) with fixed Id={Id}", OpeningBalanceSupplierId);
         }
         catch (Exception ex)
         {
-            await dbTransaction.RollbackAsync();
-            logger.LogError(ex, "Failed to seed Opening Balance Supplier with fixed Id={Id}", OpeningBalanceSupplierId);
-            throw;
+            // Log but do not throw — we don't want startup to fail on Azure App Service.
+            logger.LogWarning(ex, "Opening Balance Supplier seed skipped or failed for Id={Id}. Continuing startup.", OpeningBalanceSupplierId);
+        }
+        finally
+        {
+            if (identityInserted)
+            {
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT dbo.Suppliers OFF;");
+                }
+                catch (Exception ex)
+                {
+                    // If turning IDENTITY_INSERT off fails, log but continue.
+                    logger.LogWarning(ex, "Failed to turn IDENTITY_INSERT OFF for dbo.Suppliers. Manual cleanup may be required.");
+                }
+            }
         }
     }
 

@@ -39,6 +39,11 @@ public class Product : BaseEntity
 
     public bool TrackInventory { get; set; } = true;
 
+    // NEW (Phase 1 — auto-translation helper, ARCHITECTURE.md §5.2c): set to true the moment
+    // TranslationHelper fills in whichever of Name/NameAr was missing on create, so a later
+    // human edit through the product form is never silently overwritten by a re-run.
+    public bool IsAutoTranslated { get; set; } = false;
+
     public int CategoryId { get; set; }
     public Category Category { get; set; } = null!;
 
@@ -58,4 +63,8 @@ public class Product : BaseEntity
 
     public ICollection<ProductBatch> ProductBatches { get; set; } = new List<ProductBatch>();
     public ICollection<UnitConversion> UnitConversions { get; set; } = new List<UnitConversion>();
+
+    // NEW (Phase 1 — PricingTier, ARCHITECTURE.md §3.3): product-level price breaks
+    // (Retail/Wholesale/FirstWholesale × MinQuantity). See ProductPrice for resolution rules.
+    public ICollection<ProductPrice> Prices { get; set; } = new List<ProductPrice>();
 }

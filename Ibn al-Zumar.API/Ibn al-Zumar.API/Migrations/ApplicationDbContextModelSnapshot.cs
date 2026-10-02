@@ -224,6 +224,9 @@ namespace Ibn_alZumar.API.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<bool>("IsAutoTranslated")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -290,6 +293,9 @@ namespace Ibn_alZumar.API.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAutoTranslated")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
@@ -452,6 +458,53 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductImages", (string)null);
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductPrice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MinQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Tier")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductVariantId");
+
+                    b.HasIndex("ProductId", "ProductVariantId", "Tier", "MinQuantity")
+                        .IsUnique()
+                        .HasFilter("[ProductVariantId] IS NOT NULL");
+
+                    b.ToTable("ProductPrices", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductVariant", b =>
@@ -1132,6 +1185,98 @@ namespace Ibn_alZumar.API.Migrations
                         });
                 });
 
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaintenanceRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StatusAtNote")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorUserId");
+
+                    b.HasIndex("MaintenanceRequestId", "CreatedAt");
+
+                    b.ToTable("MaintenanceNotes", (string)null);
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenancePartUsage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("InventoryTransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("MaintenanceRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitCostPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryTransactionId");
+
+                    b.HasIndex("MaintenanceRequestId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("MaintenancePartUsages", (string)null);
+                });
+
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -1140,15 +1285,25 @@ namespace Ibn_alZumar.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal?>("ActualCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("AdminNotes")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int?>("AssignedTechnicianUserId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("DeliveryMethod")
                         .HasColumnType("int");
@@ -1167,6 +1322,10 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<decimal>("LaborCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("MaintenanceReportUrl")
                         .HasMaxLength(500)
@@ -1191,11 +1350,77 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssignedTechnicianUserId");
+
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("MaintenanceRequests");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Notifications.NotificationLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProviderMessageId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Recipient")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("nvarchar(320)");
+
+                    b.Property<int?>("RelatedEntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelatedEntityType")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SentAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RelatedEntityType", "RelatedEntityId");
+
+                    b.HasIndex("Channel", "Status", "CreatedAt");
+
+                    b.ToTable("NotificationLogs", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.PurchaseOrder", b =>
@@ -1527,6 +1752,9 @@ namespace Ibn_alZumar.API.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("DefaultPricingTier")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
@@ -1558,6 +1786,52 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("Phone");
 
                     b.ToTable("Customers", (string)null);
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.CustomerDebtSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("LastKnownBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("LastReminderSentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NextReminderDueAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReminderCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive", "NextReminderDueAt");
+
+                    b.ToTable("CustomerDebtSchedules", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.CustomerLedgerEntry", b =>
@@ -1615,6 +1889,84 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("CustomerId", "TransactionDate");
 
                     b.ToTable("CustomerLedgerEntries", (string)null);
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IssuedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaintenanceRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PdfStoragePath")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("PrintFormat")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("SentViaEmailAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("SentViaWhatsAppAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("MaintenanceRequestId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.Order", b =>
@@ -1709,6 +2061,9 @@ namespace Ibn_alZumar.API.Migrations
                     b.Property<string>("PaymobTransactionId")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("PricingTier")
+                        .HasColumnType("int");
 
                     b.Property<string>("ShippingAddress")
                         .HasMaxLength(300)
@@ -1810,6 +2165,9 @@ namespace Ibn_alZumar.API.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductVariantId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
@@ -2015,6 +2373,24 @@ namespace Ibn_alZumar.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductPrice", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Catalog.Product", "Product")
+                        .WithMany("Prices")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Catalog.ProductVariant", "ProductVariant")
+                        .WithMany("Prices")
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductVariant", b =>
@@ -2237,8 +2613,65 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("ParentWarehouse");
                 });
 
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceNote", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Identity.User", "AuthorUser")
+                        .WithMany()
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", "MaintenanceRequest")
+                        .WithMany("Notes")
+                        .HasForeignKey("MaintenanceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorUser");
+
+                    b.Navigation("MaintenanceRequest");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenancePartUsage", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Inventory.InventoryTransaction", "InventoryTransaction")
+                        .WithMany()
+                        .HasForeignKey("InventoryTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", "MaintenanceRequest")
+                        .WithMany("PartUsages")
+                        .HasForeignKey("MaintenanceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Catalog.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Inventory.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("InventoryTransaction");
+
+                    b.Navigation("MaintenanceRequest");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", b =>
                 {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Identity.User", "AssignedTechnicianUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedTechnicianUserId");
+
                     b.HasOne("IbnAlZumar.Domain.Entities.Sales.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId");
@@ -2246,6 +2679,8 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasOne("IbnAlZumar.Domain.Entities.Identity.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+
+                    b.Navigation("AssignedTechnicianUser");
 
                     b.Navigation("Customer");
 
@@ -2340,6 +2775,17 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("Supplier");
                 });
 
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.CustomerDebtSchedule", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Sales.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.CustomerLedgerEntry", b =>
                 {
                     b.HasOne("IbnAlZumar.Domain.Entities.Sales.Customer", "Customer")
@@ -2363,6 +2809,30 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("RelatedOrder");
 
                     b.Navigation("RelatedPayment");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.Invoice", b =>
+                {
+                    b.HasOne("IbnAlZumar.Domain.Entities.Sales.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", "MaintenanceRequest")
+                        .WithMany()
+                        .HasForeignKey("MaintenanceRequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("IbnAlZumar.Domain.Entities.Sales.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("MaintenanceRequest");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.Order", b =>
@@ -2459,6 +2929,8 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.Navigation("OrderItems");
 
+                    b.Navigation("Prices");
+
                     b.Navigation("ProductBatches");
 
                     b.Navigation("PurchaseOrderItems");
@@ -2480,6 +2952,8 @@ namespace Ibn_alZumar.API.Migrations
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.ProductVariant", b =>
                 {
                     b.Navigation("AttributeValues");
+
+                    b.Navigation("Prices");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.Permission", b =>
@@ -2528,6 +3002,13 @@ namespace Ibn_alZumar.API.Migrations
                     b.Navigation("ProductBatches");
 
                     b.Navigation("ProductStocks");
+                });
+
+            modelBuilder.Entity("IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest", b =>
+                {
+                    b.Navigation("Notes");
+
+                    b.Navigation("PartUsages");
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.PurchaseOrder", b =>

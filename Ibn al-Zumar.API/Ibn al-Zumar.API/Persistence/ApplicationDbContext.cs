@@ -8,6 +8,7 @@ using IbnAlZumar.Domain.Entities.Inventory;
 using IbnAlZumar.Domain.Entities.Purchasing;
 using IbnAlZumar.Domain.Entities.Reminders;
 using IbnAlZumar.Domain.Entities.Sales;
+using IbnAlZumar.Domain.Entities.Notifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace IbnAlZumar.API.Persistence;
@@ -27,6 +28,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
 
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+    public DbSet<ProductPrice> ProductPrices => Set<ProductPrice>();
 
     // ---- Inventory ----
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
@@ -38,7 +40,7 @@ public class ApplicationDbContext : DbContext
     // ---- Purchasing ----
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
-    public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
+    public DbSet<PurchaseOrderItem> PurchaseOrderItem => Set<PurchaseOrderItem>();
 
     // ---- Purchasing / Supplier Accounting ----
     public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
@@ -50,9 +52,14 @@ public class ApplicationDbContext : DbContext
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<CustomerLedgerEntry> CustomerLedgerEntries => Set<CustomerLedgerEntry>();
+    public DbSet<Invoice> Invoices => Set<Invoice>(); // FIXED: Added Invoices
+    public DbSet<CustomerDebtSchedule> CustomerDebtSchedules => Set<CustomerDebtSchedule>(); // FIXED: Added CustomerDebtSchedules
 
     // ---- Shipping Zones ----
     public DbSet<ShippingZone> ShippingZones => Set<ShippingZone>();
+
+    // ---- Notifications ----
+    public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
 
     // ---- Identity / Dynamic RBAC ----
     public DbSet<User> Users => Set<User>();
@@ -66,7 +73,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Reminder> Reminders => Set<Reminder>();
 
     // ---- Maintenance ----
-    public DbSet<IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest> MaintenanceRequests => Set<IbnAlZumar.Domain.Entities.Maintenance.MaintenanceRequest>();
+    public DbSet<Domain.Entities.Maintenance.MaintenanceRequest> MaintenanceRequests => Set<Domain.Entities.Maintenance.MaintenanceRequest>();
+    public DbSet<Domain.Entities.Maintenance.MaintenanceNote> MaintenanceNotes => Set<Domain.Entities.Maintenance.MaintenanceNote>();
+    public DbSet<Domain.Entities.Maintenance.MaintenancePartUsage> MaintenancePartUsages => Set<Domain.Entities.Maintenance.MaintenancePartUsage>();
 
     // ---- Attendance & Payroll (Voice Biometric Attendance) ----
     public DbSet<AttendanceLog> AttendanceLogs => Set<AttendanceLog>();
@@ -78,8 +87,6 @@ public class ApplicationDbContext : DbContext
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
-
-        //                              decimal                             
         configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
     }
 
@@ -103,7 +110,6 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(log => log.ToolName);
         });
 
-        // ClientUuid Unique Filtered Index for Offline Sync Idempotency (SQL Server standard filter)
         modelBuilder.Entity<Order>()
             .HasIndex(o => o.ClientUuid)
             .IsUnique()
@@ -129,8 +135,6 @@ public class ApplicationDbContext : DbContext
             .WithMany(u => u.PayrollRecords)
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        // ---- Supplier Accounting (Ledger & Payments) ----
 
         modelBuilder.Entity<SupplierPayment>()
             .HasOne(sp => sp.Supplier)
@@ -176,7 +180,6 @@ public class ApplicationDbContext : DbContext
 
         ApplyGlobalSoftDeleteFilter(modelBuilder);
 
-        //          EF Core 10622                                     Joint Tables
         modelBuilder.Entity<RolePermission>()
             .HasQueryFilter(rp => !rp.Permission.IsDeleted);
 
@@ -214,7 +217,7 @@ public class ApplicationDbContext : DbContext
             Address = null,
             IsMainWarehouse = true,
             IsActive = true,
-            Tier = IbnAlZumar.Domain.Enums.WarehouseTier.MainCentral, // صريحة لتأكيد التبعية الهرمية
+            Tier = IbnAlZumar.Domain.Enums.WarehouseTier.MainCentral,
             ParentWarehouseId = null,
             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             UpdatedAt = null,

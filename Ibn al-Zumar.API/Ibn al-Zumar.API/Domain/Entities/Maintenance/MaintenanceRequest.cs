@@ -53,4 +53,21 @@ public class MaintenanceRequest : BaseEntity
 
     [MaxLength(500)]
     public string? MaintenanceReportUrl { get; set; }
+
+    // ---- Phase 2 Maintenance Workflow Extensions ----
+    public int? AssignedTechnicianUserId { get; set; }
+
+    [ForeignKey(nameof(AssignedTechnicianUserId))]
+    public User? AssignedTechnicianUser { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal LaborCost { get; set; } = 0m;
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? ActualCost { get; set; }
+
+    public DateTime? DeliveredAt { get; set; }
+
+    public ICollection<MaintenanceNote> Notes { get; set; } = new List<MaintenanceNote>();
+    public ICollection<MaintenancePartUsage> PartUsages { get; set; } = new List<MaintenancePartUsage>();
 }

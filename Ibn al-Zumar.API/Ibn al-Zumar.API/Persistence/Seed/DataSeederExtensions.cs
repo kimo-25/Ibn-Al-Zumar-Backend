@@ -25,8 +25,16 @@ public static class DataSeederExtensions
         var passwordHasher = services.GetRequiredService<IPasswordHasher<User>>();
         var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("DataSeeder");
 
-        await context.Database.MigrateAsync();
-        await DataSeeder.SeedAsync(context, passwordHasher, logger);
+        try
+        {
+            await context.Database.MigrateAsync();
+            await DataSeeder.SeedAsync(context, passwordHasher, logger);
+        }
+        catch (Exception ex)
+        {
+            // Log and swallow exceptions so the app can start (useful for Azure App Service startup).
+            logger.LogError(ex, "Database migration or seeding failed during startup. Continuing application startup.");
+        }
 
         return app;
     }
