@@ -126,7 +126,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("UserId", "CheckInTime");
 
-                    b.ToTable("AttendanceLogs");
+                    b.ToTable("AttendanceLogs", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Attendance.PayrollRecord", b =>
@@ -172,7 +172,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PayrollRecords");
+                    b.ToTable("PayrollRecords", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.Brand", b =>
@@ -603,7 +603,7 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("ProductVariantId", "ProductAttributeDefinitionId")
                         .IsUnique();
 
-                    b.ToTable("ProductVariantAttributeValue");
+                    b.ToTable("ProductVariantAttributeValue", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Catalog.UnitConversion", b =>
@@ -648,7 +648,7 @@ namespace Ibn_alZumar.API.Migrations
                     b.HasIndex("ProductId", "FromUnit")
                         .IsUnique();
 
-                    b.ToTable("UnitConversion");
+                    b.ToTable("UnitConversion", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Identity.Permission", b =>
@@ -999,7 +999,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("ProductId", "WarehouseId", "ExpiryDate");
 
-                    b.ToTable("ProductBatch");
+                    b.ToTable("ProductBatch", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Inventory.ProductStock", b =>
@@ -1170,7 +1170,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("Tier");
 
-                    b.ToTable("Warehouses");
+                    b.ToTable("Warehouses", (string)null);
 
                     b.HasData(
                         new
@@ -1356,7 +1356,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("MaintenanceRequests");
+                    b.ToTable("MaintenanceRequests", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Notifications.NotificationLog", b =>
@@ -1634,7 +1634,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("SupplierId", "TransactionDate");
 
-                    b.ToTable("SupplierLedgerEntries");
+                    b.ToTable("SupplierLedgerEntries", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Purchasing.SupplierPayment", b =>
@@ -1685,7 +1685,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasIndex("SupplierId", "PaymentDate");
 
-                    b.ToTable("SupplierPayments");
+                    b.ToTable("SupplierPayments", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Reminders.Reminder", b =>
@@ -1726,7 +1726,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reminders");
+                    b.ToTable("Reminders", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Sales.Customer", b =>
@@ -2173,6 +2173,10 @@ namespace Ibn_alZumar.API.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("UnitCostPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -2291,7 +2295,7 @@ namespace Ibn_alZumar.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ShippingZones");
+                    b.ToTable("ShippingZones", (string)null);
                 });
 
             modelBuilder.Entity("IbnAlZumar.Domain.Entities.Attendance.AttendanceLog", b =>

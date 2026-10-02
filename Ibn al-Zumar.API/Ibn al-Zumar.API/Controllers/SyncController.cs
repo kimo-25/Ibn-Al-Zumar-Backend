@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using IbnAlZumar.API.DTOs.Sync;
 using IbnAlZumar.API.Persistence;
+using IbnAlZumar.API.Services.Catalog;
 using IbnAlZumar.Domain.Entities.Sales;
 using IbnAlZumar.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -16,14 +17,16 @@ public class SyncController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<SyncController> _logger;
+    private readonly IPricingService _pricingService;
 
-    // Postgres unique_violation code; use "2627"/"2601" if you're actually on SQL Server.
-    private const string UniqueViolationSqlState = "23505";
+    private const int SqlServerUniqueIndexErrorNumber = 2601;
+    private const int SqlServerUniqueConstraintErrorNumber = 2627;
 
-    public SyncController(ApplicationDbContext context, ILogger<SyncController> logger)
+    public SyncController(ApplicationDbContext context, ILogger<SyncController> logger, IPricingService pricingService)
     {
         _context = context;
         _logger = logger;
+        _pricingService = pricingService;
     }
 
     /// <summary>
@@ -131,15 +134,23 @@ public class SyncController : ControllerBase
 
             foreach (var itemDto in dto.Items)
             {
-                var grossLine = itemDto.UnitPrice * itemDto.Quantity;
+                // Resolve authoritative unit price using the order-level tier provided by the POS.
+                var authoritativeUnitPrice = await _pricingService.ResolveUnitPriceAsync(
+                    itemDto.ProductId,
+                    itemDto.ProductVariantId,
+                    dto.PricingTier,
+                    itemDto.Quantity);
+
+                var grossLine = authoritativeUnitPrice * itemDto.Quantity;
                 var lineDiscount = CalculateDiscount(grossLine, itemDto.DiscountType, itemDto.DiscountValue);
                 var lineTotal = grossLine - lineDiscount;
 
                 items.Add(new OrderItem
                 {
                     ProductId = itemDto.ProductId,
+                    ProductVariantId = itemDto.ProductVariantId,
                     Quantity = itemDto.Quantity,
-                    UnitPrice = itemDto.UnitPrice,
+                    UnitPrice = authoritativeUnitPrice,
                     DiscountType = itemDto.DiscountType,
                     DiscountValue = itemDto.DiscountValue,
                     DiscountAmount = lineDiscount,
@@ -151,10 +162,16 @@ public class SyncController : ControllerBase
 
             var orderDiscount = CalculateDiscount(subTotal, dto.DiscountType, dto.DiscountValue);
 
+            // Use same OrderNumber sequence/format as online OrderService.GenerateOrderNumberAsync
+            var sequenceValue = await _context.Database
+                .SqlQueryRaw<long>("SELECT NEXT VALUE FOR dbo.OrderNumberSeq AS [Value]")
+                .SingleAsync();
+            var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{sequenceValue:D6}";
+
             var order = new Order
             {
                 ClientUuid = dto.ClientUuid,
-                OrderNumber = $"ORD-OFFLINE-{Guid.NewGuid():N}"[..20], // replace with your real numbering scheme
+                OrderNumber = orderNumber,
                 CustomerId = dto.CustomerId,
                 GuestName = dto.GuestName,
                 GuestPhone = dto.GuestPhone,
@@ -172,6 +189,8 @@ public class SyncController : ControllerBase
                 TotalAmount = subTotal - orderDiscount,
                 Notes = dto.Notes,
                 Items = items,
+                // Persist the pricing tier used by this offline sale (order-level).
+                PricingTier = dto.PricingTier,
             };
 
             _context.Orders.Add(order);
@@ -217,9 +236,12 @@ public class SyncController : ControllerBase
         ErrorMessage = message,
     };
 
-    private static bool IsUniqueViolation(DbUpdateException ex) =>
-        ex.InnerException?.Message.Contains(UniqueViolationSqlState) == true
-        || ex.InnerException?.Message.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) == true;
+    private static bool IsUniqueViolation(DbUpdateException ex)
+    {
+        return ex.InnerException is Microsoft.Data.SqlClient.SqlException sqlEx
+            && (sqlEx.Number == SqlServerUniqueIndexErrorNumber
+                || sqlEx.Number == SqlServerUniqueConstraintErrorNumber);
+    }
 
     private int? GetUserIdFromClaims()
     {

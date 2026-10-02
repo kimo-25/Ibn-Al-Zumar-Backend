@@ -43,6 +43,10 @@ public class SyncOrderDto
     [MaxLength(500)]
     public string? Notes { get; set; }
 
+    // NEW: pricing tier applied to the whole order (sent by the POS as `pricingTier` at order level).
+    // Default = Retail to remain compatible with older queued orders that lack this field.
+    public PricingTierType PricingTier { get; set; } = PricingTierType.Retail;
+
     [Required, MinLength(1, ErrorMessage = "Order must contain at least one item.")]
     public List<SyncOrderItemDto> Items { get; set; } = new();
 }
@@ -52,9 +56,13 @@ public class SyncOrderItemDto
     [Required]
     public int ProductId { get; set; }
 
+    // Keep variant selection per-item
+    public int? ProductVariantId { get; set; }
+
     [Required, Range(1, int.MaxValue, ErrorMessage = "Quantity must be positive.")]
     public int Quantity { get; set; }
 
+    // Client-sent UnitPrice is accepted for informational purposes but the server re-resolves authoritative UnitPrice.
     [Required, Range(0, double.MaxValue, ErrorMessage = "UnitPrice cannot be negative.")]
     public decimal UnitPrice { get; set; }
 

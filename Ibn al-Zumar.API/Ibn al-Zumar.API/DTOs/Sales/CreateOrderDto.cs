@@ -21,7 +21,7 @@ namespace IbnAlZumar.API.DTOs.Sales
         public decimal DiscountValue { get; set; } = 0;
         public int? CustomerId { get; set; }
 
-        public PricingTierType PricingTier { get; set; } = PricingTierType.Retail; // 👈 أضفنا شريحة السعر للطلب
+        public PricingTierType PricingTier { get; set; } = PricingTierType.Retail;
 
         public List<CreateOrderItemDto> Items { get; set; } = new();
     }
