@@ -1,6 +1,13 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using IbnAlZumar.Api.Services.Sales;
+using IbnAlZumar.API.DTOs.Sales;
 using IbnAlZumar.Domain.Enums;
-using Services.Sales;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IbnAlZumar.API.Ai.Tools
 {
@@ -39,7 +46,15 @@ namespace IbnAlZumar.API.Ai.Tools
             }
 
             var orderService = context.Services.GetRequiredService<IOrderService>();
-            var allOrders = await orderService.GetAllOrdersAsync();
+
+            // إرسال الـ Filter والـ CancellationToken لتوافق الـ Interface الجديد
+            var filter = new OrderFilterDto
+            {
+                PageNumber = 1,
+                PageSize = 100
+            };
+
+            var pagedResult = await orderService.GetAllOrdersAsync(filter, ct);
 
             var pendingStatuses = new[]
             {
@@ -48,10 +63,8 @@ namespace IbnAlZumar.API.Ai.Tools
                 OrderStatus.CancellationRequested.ToString()
             };
 
-            // GetAllOrdersAsync projects to an anonymous type; read the Status field
-            // dynamically rather than adding a bespoke DTO just for the assistant.
-            var filtered = allOrders
-                .Where(o => pendingStatuses.Contains(((dynamic)o).Status as string))
+            var filtered = pagedResult.Items
+                .Where(o => pendingStatuses.Contains(o.Status))
                 .Take(limit)
                 .ToList();
 

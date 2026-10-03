@@ -7,7 +7,7 @@ using IbnAlZumar.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Services.Sales;
+using IbnAlZumar.API.Services.Sales;
 
 namespace IbnAlZumar.API.Controllers;
 

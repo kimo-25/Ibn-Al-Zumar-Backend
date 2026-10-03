@@ -5,7 +5,7 @@ using IbnAlZumar.API.DTOs.Catalog;
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.Domain.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
-using Services.Sales;
+using IbnAlZumar.API.Services.Sales;
 using System.Linq.Expressions;
 
 namespace IbnAlZumar.API.Services.Catalog;

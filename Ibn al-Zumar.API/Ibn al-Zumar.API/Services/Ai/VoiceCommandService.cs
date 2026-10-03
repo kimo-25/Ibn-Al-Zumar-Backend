@@ -6,8 +6,7 @@ using IbnAlZumar.API.DTOs.Sales;
 using IbnAlZumar.API.Persistence;
 using IbnAlZumar.API.Services.Catalog;
 using Microsoft.EntityFrameworkCore;
-using Services.Sales;
-
+using IbnAlZumar.API.Services.Sales;
 namespace IbnAlZumar.API.Services.Ai
 {
     /// <summary>

@@ -43,13 +43,13 @@ public enum NotificationStatus
 /// </summary>
 public enum PaymentMethod
 {
+    Cash = 0,
     CashOnDelivery = 1,
-    Cash = 2,
-    CreditCard = 3,
-    InstaPay = 4,
+    CreditCard = 2,
+    InstaPay = 3,
+    Wallet = 4,
     Fawry = 5,
-    CustomerCredit = 6,
-    Wallet = 7
+    ApplePay = 8
 }
 
 public enum PaymentStatus

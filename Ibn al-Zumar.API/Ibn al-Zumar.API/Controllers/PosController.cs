@@ -1,7 +1,9 @@
-﻿using IbnAlZumar.API.Services.Catalog;
+﻿using IbnAlZumar.API.Persistence;
+using IbnAlZumar.API.Services.Catalog;
 using IbnAlZumar.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace IbnAlZumar.API.Controllers;
 
@@ -12,11 +14,16 @@ public class PosController : ControllerBase
 {
     private readonly IPosCatalogService _posCatalogService;
     private readonly IPricingService _pricingService;
+    private readonly ApplicationDbContext _db;
 
-    public PosController(IPosCatalogService posCatalogService, IPricingService pricingService)
+    public PosController(
+        IPosCatalogService posCatalogService,
+        IPricingService pricingService,
+        ApplicationDbContext db)
     {
         _posCatalogService = posCatalogService;
         _pricingService = pricingService;
+        _db = db;
     }
 
     /// <summary>
@@ -51,5 +58,39 @@ public class PosController : ControllerBase
     {
         var unitPrice = await _pricingService.ResolveUnitPriceAsync(productId, productVariantId, tier, quantity, ct);
         return Ok(new { productId, productVariantId, tier, quantity, unitPrice });
+    }
+
+    /// <summary>
+    /// GET /api/pos/products/for-labels?q=
+    /// Light-weight endpoint returning Product Id, SKU, Barcode, and Name specifically for barcode label printing.
+    /// </summary>
+    [HttpGet("products/for-labels")]
+    public async Task<IActionResult> GetProductsForLabels(
+        [FromQuery] string? q,
+        CancellationToken ct = default)
+    {
+        var query = _db.Products.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim();
+            query = query.Where(p =>
+                p.Name.Contains(term) ||
+                p.SKU.Contains(term) ||
+                (p.Barcode != null && p.Barcode.Contains(term)));
+        }
+
+        var list = await query
+            .OrderBy(p => p.Name)
+            .Select(p => new
+            {
+                p.Id,
+                p.SKU,
+                p.Barcode,
+                p.Name
+            })
+            .ToListAsync(ct);
+
+        return Ok(list);
     }
 }
