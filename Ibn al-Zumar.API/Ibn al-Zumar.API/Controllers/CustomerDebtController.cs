@@ -1,4 +1,4 @@
-﻿using IbnAlZumar.API.Services.Sales;
+﻿using IbnAlZumar.Api.Services.Sales;
 using IbnAlZumar.Persistence.Seed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

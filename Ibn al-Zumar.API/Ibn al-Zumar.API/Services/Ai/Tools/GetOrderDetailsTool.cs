@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using IbnAlZumar.API.Common.Exceptions;
-using IbnAlZumar.API.Services.Sales;
+using IbnAlZumar.Api.Services.Sales;
 namespace IbnAlZumar.API.Ai.Tools
 {
     /// <summary>Returns full details (items, totals, status, customer) for one order.</summary>

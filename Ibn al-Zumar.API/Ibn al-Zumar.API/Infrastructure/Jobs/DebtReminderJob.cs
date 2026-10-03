@@ -1,4 +1,4 @@
-﻿using IbnAlZumar.API.Services.Sales;
+﻿using IbnAlZumar.Api.Services.Sales;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;

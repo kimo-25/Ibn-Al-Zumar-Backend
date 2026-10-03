@@ -8,7 +8,7 @@ using IbnAlZumar.Domain.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace IbnAlZumar.API.Services.Sales;
+namespace IbnAlZumar.Api.Services.Sales;
 
 public class CustomerDebtService : ICustomerDebtService
 {
