@@ -1,0 +1,65 @@
+﻿using IbnAlZumar.Domain.Enums;
+
+namespace IbnAlZumar.API.DTOs.Sales
+{
+    public class CreateOrderDto
+    {
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerPhone { get; set; } = string.Empty;
+        public string? CustomerEmail { get; set; }
+        public string? ShippingAddress { get; set; }
+        public int? ShippingZoneId { get; set; }
+        public string? Notes { get; set; }
+
+        public bool IsCustomZoneRequested { get; set; }
+        public string? CustomZoneName { get; set; }
+
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+        public OrderSource OrderSource { get; set; } = OrderSource.Online;
+        public decimal DiscountAmount { get; set; } = 0;
+        public string DiscountType { get; set; } = "Fixed";
+        public decimal DiscountValue { get; set; } = 0;
+        public int? CustomerId { get; set; }
+
+        public PricingTierType PricingTier { get; set; } = PricingTierType.Retail;
+
+        // NEW: optional order-level tax settings coming from POS
+        /// <summary>Percent value, e.g. 15 for 15% — if null, fallback to default (14%).</summary>
+        public decimal? TaxRatePercent { get; set; }
+
+        /// <summary>If true, tax is exempt and tax amount must be zero regardless of rates.</summary>
+        public bool? IsTaxExempt { get; set; }
+
+        public List<CreateOrderItemDto> Items { get; set; } = new();
+    }
+
+    public class CreateOrderItemDto
+    {
+        public int ProductId { get; set; }
+        public int? ProductVariantId { get; set; } // 👈 أضفنا معرف المتغير الفرعي بالعنصر
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+
+        // NEW: optional per-item pricing tier (if the POS applied a tier per item).
+        public PricingTierType? PricingTier { get; set; }
+    }
+
+    public class OrderResponseDto
+    {
+        public int Id { get; set; }
+        public string OrderNumber { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerPhone { get; set; } = string.Empty;
+        public string? ShippingAddress { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string PaymentMethod { get; set; } = string.Empty;
+        public string PaymentStatus { get; set; } = string.Empty;
+        public string? PaymobTransactionId { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal TaxRate { get; set; }
+        public decimal TaxAmount { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+}
