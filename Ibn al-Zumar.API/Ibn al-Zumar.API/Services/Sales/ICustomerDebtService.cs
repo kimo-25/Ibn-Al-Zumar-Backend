@@ -1,7 +1,7 @@
 ﻿using IbnAlZumar.API.DTOs.Common;
 using IbnAlZumar.API.DTOs.Sales;
 
-namespace IbnAlZumar.API.Services.Sales;
+namespace IbnAlZumar.Api.Services.Sales;
 
 public interface ICustomerDebtService
 {

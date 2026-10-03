@@ -5,7 +5,7 @@ using IbnAlZumar.API.Persistence;
 using IbnAlZumar.API.Services.Catalog;
 using IbnAlZumar.Domain.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
-using IbnAlZumar.API.Services.Sales;
+using IbnAlZumar.Api.Services.Sales;
 namespace IbnAlZumar.Api.Services.Catalog;
 
 public class CategoryService : ICategoryService
